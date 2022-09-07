@@ -29,8 +29,8 @@ switch behLoaded
                 [~,ii] = max(abs(data.final.vel));
                 if data.final.vel(ii) < 0
                     data.final.vel = -data.final.vel; % Flip velocity for recordings on IV rig#1, which has inverted positional encoder signal
-                    fprintf('%s run on IV rig#1, flipping velocity signal and re-saving \n',beh(x).rec);
-                    save(fullfile(fPath,fName{z}),'data'); % Overwrite data file to adjust
+                    fprintf('%s run on IV rig#1 or 2pTrain, flipping velocity signal and re-saving \n',beh(x).rec);
+                    save(fullfile(fPath,fName{y}),'data'); % Overwrite data file to adjust
                 end
                 beh(x).vel = data.final.vel; % Velocity signal
                 beh(x).on = data.final.mov.onsets; beh(x).off = data.final.mov.offsets;                 % Movement onset/offset times in sampling freq (data.gen.Fs), NOT in seconds
