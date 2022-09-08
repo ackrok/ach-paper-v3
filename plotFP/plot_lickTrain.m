@@ -7,7 +7,7 @@ switch behLoaded
         [fName,fPath] = uigetfile([fPath,'*.mat'],'MultiSelect','On');
         beh = extractBeh(fPath, fName);
 end
-if ~exist('beh'); error('No variable called beh exists'); end
+if ~exist('beh','var'); error('No variable called beh exists'); end
 
 %% Plot lick rate
 lickWithin = 0.25; %CHANGE, lick within this window

@@ -51,7 +51,7 @@ switch loaded
         [fName,fPath] = uigetfile([fPath,'*.mat'],'MultiSelect','On');
         rawS = extractRaw_fft(fPath,fName);
 end
-if ~exist('rawS'); error('No variable called rawS exists'); end
+if ~exist('rawS','var'); error('No variable called rawS exists'); end
 
 %% FFT
 [p1_mat, f] = getFft(rawS);
