@@ -55,10 +55,16 @@ function beh = extractBeh(fPath, fName, varargin)
                 save(fullfile(fPath,fName{f}),'data'); % Overwrite data file to adjust
             end
             beh(x).vel = data.final.vel; % Velocity signal
-            beh(x).on = data.final.mov.onsets; 
-            beh(x).off = data.final.mov.offsets; % Locomotion onset/offset times in sampling freq (data.gen.Fs), NOT in seconds
-            beh(x).onRest = data.final.mov.onsetsRest; 
-            beh(x).offRest = data.final.mov.offsetsRest; % Immobility onset/offset times in sampling freq (data.gen.Fs), NOT in seconds
+            if isfield(data.final,'mov')
+                if isfield(data.final.mov,'onsets')
+                    beh(x).on = data.final.mov.onsets; 
+                    beh(x).off = data.final.mov.offsets; % Locomotion onset/offset times in sampling freq (data.gen.Fs), NOT in seconds
+                end
+                if isfield(data.final.mov,'onsetsRest')
+                    beh(x).onRest = data.final.mov.onsetsRest; 
+                    beh(x).offRest = data.final.mov.offsetsRest; % Immobility onset/offset times in sampling freq (data.gen.Fs), NOT in seconds
+                end
+            end
         end
 
         %% REWARD
