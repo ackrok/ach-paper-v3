@@ -19,7 +19,6 @@ function [rewYes, rewNo, lickNew] = extractRewardedTrials(rewDelivery, lick, var
 %   collected
 %
 %   Author: Anya Krok, August 2022
-​
     %%
     switch nargin
         case 2
@@ -35,13 +34,13 @@ function [rewYes, rewNo, lickNew] = extractRewardedTrials(rewDelivery, lick, var
     lick_repeat = [diff(lick.*1000) > 50]; % Identify licks that are <50ms after previous lick
     lick_sub = lick; lick_sub(1) = [];
     lickNew = [lick(1); lick_sub(lick_repeat)]; % Overwrite lick vector
-​
+
     %% 
     bin = 1/1000;
     peth = getClusterPETH(lickNew, rewDelivery, bin, window); % PETH: lick aligned to reward in 1 ms bins
     cts = peth.cts{1}; % Lick counts in 1ms bins for each reward trial
     rew_lick0 = find(sum(cts,1) == 0); % Find reward index where total licks within window is 0
-​
+
     % bin = 1/1000; window = [-0.25 0];
     % peth = getClusterPETH(lick, rew, bin, window);
     % rew_prewlick = find(sum(peth.cts{1},1) >= 1); % Find reward index for trials where mouse licks preceding reward
@@ -49,7 +48,7 @@ function [rewYes, rewNo, lickNew] = extractRewardedTrials(rewDelivery, lick, var
     
     rewDelivery([rew_lick0, rew_prewlick]) = nan; 
     cts(:, [rew_lick0, rew_prewlick]) = nan; % Remove non-rewarded trials and trials where mouse licks preceding reward
-​
+
     rewNo = find(isnan(rewDelivery)); % Index of deliveries where animal did not lick to receive reward
     rewYes = find(~isnan(rewDelivery)); % Index of delivieries where animal collected reward
 end
