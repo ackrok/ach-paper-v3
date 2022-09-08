@@ -5,70 +5,9 @@ switch behLoaded
         %% Select .mat files you want to add to summary data structu
         fPath = 'R:\tritsn01labspace\'; 
         [fName,fPath] = uigetfile([fPath,'*.mat'],'MultiSelect','On');
-        if ~iscell(fName); fName = {fName}; end
-
-        %% Extract data
-        beh = struct;
-        for z = 1:length(fName) 
-            load(fullfile(fPath,fName{z})); 
-            [an,b] = strtok(fName{z},'_'); day = strtok(b,'_');
-            x = 1+length(beh);
-            beh(x).rec = [an,'-',day]; 
-            beh(x).site = 'DLS';
-            beh(x).task = 'wheel';
-
-            %% Photometry
-            beh(x).Fs = data.gen.Fs; % Sampling frequency, in Hz
-            beh(x).time = data.final.time; % Time vector
-            beh(x).FP = data.final.FP;
-            beh(x).nbFP = data.final.nbFP; % Photometry signal(s)
-            beh(x).FPnames = data.final.FPnames; % Names of photometry signal(s)
-
-            %% Movement
-            if isfield(data.final,'vel') % If movement data exists
-                [~,ii] = max(abs(data.final.vel));
-                if data.final.vel(ii) < 0
-                    data.final.vel = -data.final.vel; % Flip velocity for recordings on IV rig#1, which has inverted positional encoder signal
-                    fprintf('%s run on IV rig#1 or 2pTrain, flipping velocity signal and re-saving \n',beh(x).rec);
-                    save(fullfile(fPath,fName{z}),'data'); % Overwrite data file to adjust
-                end
-                beh(x).vel = data.final.vel; % Velocity signal
-                beh(x).on = data.final.mov.onsets; beh(x).off = data.final.mov.offsets;                 % Movement onset/offset times in sampling freq (data.gen.Fs), NOT in seconds
-                beh(x).onRest = data.final.mov.onsetsRest; beh(x).offRest = data.final.mov.offsetsRest; % Rest onset/offset times in sampling freq (data.gen.Fs), NOT in seconds
-            else % Open field
-                try 
-                    beh(x).cam = data.final.cam.on; 
-                catch
-                    signal = data.acq.opto.trace;
-                    sigEdge = data.gen.params.FP.sigEdge; 
-                    rawFs = data.gen.params.acqFs; dsRate = data.gen.params.dsRate;
-                    if sigEdge ~= 0
-                        signal = signal((sigEdge*rawFs)+1:end-(sigEdge*rawFs));
-                    end
-                    camOn = getPulseOnsetOffset (signal, 0.5);
-                    camOn_Fs = round(camOn/dsRate);
-                    beh(x).cam = camOn_Fs;
-                end
-            end
-
-            %% Lick/Reward
-            if isfield(data.acq,'rew')
-                % data = processReward(data, data.gen.params);
-                beh(x).task = 'reward';
-                beh(x).reward = data.final.rew.onset;    % Reward delivery time in sampling freq (data.gen.Fs), NOT in seconds
-                beh(x).lick = data.final.lick.onset;        % Lick times in sampling freq (data.gen.Fs), NOT in seconds
-                beh(x).lickVec = data.final.lick.trace;        % Lick trace
-            end
-
-            %%
-            fprintf('Extracted from %s\n',fName{z});
-        end
-        if isempty(beh(1).Fs); beh(1) = []; end
+        beh = extractBeh(fPath, fName);
 end
-%%
-if ~exist(beh)
-    error('No variable called beh exists');
-end
+if ~exist(beh); error('No variable called beh exists'); end
 
 %% Variables
 [plotOpt,ind] = listdlg('PromptString',{'Select All Plots to Generate',...
