@@ -45,10 +45,10 @@ function [amp, dur, freq, thres] = getImmPausePeak(beh, varargin)
     end
     
     %% Initialize outputs
-    ampCell = cell(length(beh),2); 
-    durCell = cell(length(beh),2); 
-    amp = []; dur = []; freq = [];
-    thres = [];
+    amp = nan(length(beh),2); % 1st column will contain amplitudes of troughs, 2nd column will contain amplitudes of peaks
+    dur = nan(length(beh),2); 
+    freq = nan(length(beh),2); 
+    thres = nan(length(beh),1);
 
     %% Analyze
     for x = 1:length(beh) % iterate over recordings
@@ -63,6 +63,7 @@ function [amp, dur, freq, thres] = getImmPausePeak(beh, varargin)
             idx_rew = extractEventST([1:length(fp_mat)]', floor(beh(x).reward), floor(beh(x).reward)+rewWindow, 1); % identify sample during reward
             end; end
         idx_rest = extractEventST([1:length(fp_mat)]', beh(x).onRest, beh(x).offRest, 1); % index: infusion + rest
+        if isempty(idx_rest); continue; end
         idx_rest = idx_rest(~ismember(idx_rest, idx_rew)); % exclude reward, include rest
 
         %% Bandpass filter
@@ -142,11 +143,9 @@ function [amp, dur, freq, thres] = getImmPausePeak(beh, varargin)
         end % width at half max for pauses
 
         %%
-        ampCell{x,1} = tmp_amp_pause; ampCell{x,2} = tmp_amp_peak; % Amplitude of maximum deflection
-        durCell{x,1} = tmp_dur_pause; durCell{x,2} = tmp_dur_peak; % Duration at half max
-        amp(x,1) = nanmean(tmp_amp_pause); 
+        amp(x,1) = nanmean(tmp_amp_pause); % Amplitude of maximum deflection
         amp(x,2) = nanmean(tmp_amp_peak);
-        dur(x,1) = nanmean(tmp_dur_pause); 
+        dur(x,1) = nanmean(tmp_dur_pause); % Duration at half maximum
         dur(x,2) = nanmean(tmp_dur_peak); 
         freq(x,1) = (1./nanmean(diff(idxPause)))*Fs; % Frequency of maximum deflections
         freq(x,2) = (1./nanmean(diff(idxPeak)))*Fs; % Frequency of maximum deflections
