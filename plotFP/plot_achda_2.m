@@ -7,7 +7,7 @@ switch behLoaded
         [fName,fPath] = uigetfile([fPath,'*.mat'],'MultiSelect','On');
         beh = extractBeh(fPath, fName);
 end
-if ~exist(beh); error('No variable called beh exists'); end
+if ~exist('beh'); error('No variable called beh exists'); end
 
 %% Variables
 [plotOpt,ind] = listdlg('PromptString',{'Select All Plots to Generate',...
