@@ -23,11 +23,13 @@ for x = 1:length(beh)
     %lickNew: corrected vector of lick times, in seconds
     bin = 0.1; window = [-2 2];
     peth = getClusterPETH(lickNew, rew(rewYes), bin, window); % align lick to rewarded trials
+    cts = peth.cts{1}./bin; % licks aligned to rewarded trials, adjust by bin size
     sp(x) = subplot(plm,pln,x); hold on
-    plot([0 0],[0 1],'k');
-    shadederrbar(peth.time, nanmean(peth.cts{1},2), SEM(peth.cts{1},2), 'm'); % plot lick rate
-    xlabel('latency to reward (s)'); ylabel('lick rate');
-    title(sprintf('%s: (%d/%d)',beh(x).rec,length(find(rewYes)),length(rew)),'Interpreter','none');
+    plot([0 0],[0 10],'k');
+    shadederrbar(peth.time, nanmean(cts,2), SEM(cts,2), 'm'); % plot lick rate
+    xlabel('latency to reward (s)');
+    ylabel('lick rate (licks/s)'); ylim([0 11])
+    title(sprintf('%s: %d%s of %d',beh(x).rec,round(100*length(find(rewYes))/length(rew)),'%',length(rew)));
     %title of subplot is 
     % <recording name (#rewarded trials / total #trials)>
 end
