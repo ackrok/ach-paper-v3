@@ -5,46 +5,9 @@ switch behLoaded
         %% Select .mat files you want to add to summary data structu
         fPath = 'R:\tritsn01labspace\'; 
         [fName,fPath] = uigetfile([fPath,'*.mat'],'MultiSelect','On');
-        if ~iscell(fName); fName = {fName}; end
-
-        %% Extract data
-        if ~exist('beh','var'); beh = struct; end
-        for y = 1:length(fName) 
-            load(fullfile(fPath,fName{y})); 
-            [an,b] = strtok(fName{y},'_'); day = strtok(b,'_');
-            x = 1+length(beh);
-            beh(x).rec = [an,'-',day]; 
-            beh(x).site = 'DLS';
-            beh(x).task = 'wheel';
-
-            %% Photometry
-            beh(x).Fs = data.gen.Fs; % Sampling frequency, in Hz
-            beh(x).time = data.final.time; % Time vector
-        %     beh(x).FP = data.final.FP;
-        %     beh(x).nbFP = data.final.nbFP; % Photometry signal(s)
-        %     beh(x).FPnames = data.final.FPnames; % Names of photometry signal(s)
-
-            %% Movement
-            if isfield(data.final,'vel') % If movement data exists
-                beh(x).vel = data.final.vel; % Velocity signal
-                beh(x).on = data.final.mov.onsets; beh(x).off = data.final.mov.offsets;                 % Movement onset/offset times in sampling freq (data.gen.Fs), NOT in seconds
-                beh(x).onRest = data.final.mov.onsetsRest; beh(x).offRest = data.final.mov.offsetsRest; % Rest onset/offset times in sampling freq (data.gen.Fs), NOT in seconds
-            end
-
-            %% Lick/Reward
-            if isfield(data.acq,'rew')
-                % data = processReward(data, data.gen.params);
-                beh(x).task = 'reward';
-                beh(x).reward = data.final.rew.onset;    % Reward delivery time in sampling freq (data.gen.Fs), NOT in seconds
-                beh(x).lick = data.final.lick.onset;        % Lick times in sampling freq (data.gen.Fs), NOT in seconds
-                beh(x).lickVec = data.final.lick.trace;        % Lick trace
-            end
-
-            %%
-            fprintf('Extracted from %s\n',fName{y});
-        end
-        if isempty(beh(1).Fs); beh(1) = []; end
+        beh = extractBeh(fPath, fName);
 end
+if ~exist(beh); error('No variable called beh exists'); end
 
 %% Plot lick rate
 lickWithin = 0.25; %CHANGE, lick within this window
