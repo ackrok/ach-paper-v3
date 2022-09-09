@@ -1,9 +1,10 @@
-function rawS = extractRaw_fft(fPath, fName)
+function [rawS] = extractRaw_fft(varargin)
 %%Extract raw photometry data from multiple recordings into a single
 %%structure and parse by specified behavioral state, for FFT analysis with
 %%function getFft
 %
-% [rawS] = extractRaw_fft(fPath, fName)
+% [rawS] = extractRaw_fft(fPath, fName) - extract new data into structure
+% [rawS] = extractRaw_fft(rawS) - only parse already extracted data
 %
 % Description: Extract raw photometry signal from multiple recording files 
 % into a larger structure to be used for FFT analysis with function getFft
@@ -15,7 +16,8 @@ function rawS = extractRaw_fft(fPath, fName)
 %   'fPath' - Character array containing folder path where data files are
 %       example: 'R:\tritsn01labspace\Anya\FiberPhotometry\AK201-206\220105'
 %   'fName' - Cell array, with each cell containing file names for each
-%   recording to be added to structure
+%               recording to be added to structure
+%   'rawS' - Structure previously generated using extractRaw_fft function
 %
 % OUPUTS
 %   'rawS' - Structure with raw photometry signals from multiple recordings
@@ -25,57 +27,66 @@ function rawS = extractRaw_fft(fPath, fName)
 % Anya Krok, January 2022
 %
     %% INPUTS
-    if ~iscell(fName); fName = {fName}; end
+    switch nargin
+        case 2
+            fPath = varargin{1};
+            fName = varargin{2};
+            if ~iscell(fName); fName = {fName}; end
+        case 1
+            rawS = varargin{1};
+    end
     
     %% Extract data
-    rawS = struct;
-    h = waitbar(0, 'Extracting raw photometry signals into structure');
-    for f = 1:length(fName)
-        fprintf('Extracting raw photometry data %s ... ',fName{f});
-        load(fullfile(fPath,fName{f})); % Load raw data file
-        [an,b] = strtok(fName{f},'_'); day = strtok(b,'_'); % Parse file name
-        x = 1 + length(rawS);
-        rawS(x).rec = [an,'-',day]; 
-        rawS(x).site = 'DLS'; % CHANGE or remove
-        
-        %% Pull parameters required for this analysis
-        if isfield(data.gen,'params')
-            params = data.gen.params; % Extract params structure
-            dsRate = params.dsRate; 
-            dsType = params.dsType; % General downsampling parameter
-            rawFs = data.gen.acqFs; 
-            Fs = data.gen.Fs;
-        else
-            error('No parameters saved during processData');
-        end
-        
-        %% Extract photometry and behavior data
-        rawS(x).FPnames = data.acq.FPnames;
-        rawS(x).rawFP = data.acq.FP;
-        rawS(x).rawFs = rawFs;
-        if isfield(data,'final')
-            if isfield(data.final,'mov')
-                if ~isempty(data.final.mov.onsets)
-                    rawS(x).on = data.final.mov.onsets.*dsRate;
-                    rawS(x).off = data.final.mov.offsets.*dsRate;
-                end
-                if ~isempty(data.final.mov.onsetsRest)
-                    rawS(x).onRest = data.final.mov.onsetsRest.*dsRate;
-                    rawS(x).offRest = data.final.mov.offsetsRest.*dsRate;
+    if nargin == 2 % If need to load data into new structure
+        rawS = struct;
+        h = waitbar(0, 'Extracting raw photometry signals into structure');
+        for f = 1:length(fName)
+            fprintf('Extracting raw photometry data %s ... ',fName{f});
+            load(fullfile(fPath,fName{f})); % Load raw data file
+            [an,b] = strtok(fName{f},'_'); day = strtok(b,'_'); % Parse file name
+            x = 1 + length(rawS);
+            rawS(x).rec = [an,'-',day]; 
+            rawS(x).site = 'DLS'; % CHANGE or remove
+
+            %% Pull parameters required for this analysis
+            if isfield(data.gen,'params')
+                params = data.gen.params; % Extract params structure
+                dsRate = params.dsRate; 
+                dsType = params.dsType; % General downsampling parameter
+                rawFs = data.gen.acqFs; 
+                Fs = data.gen.Fs;
+            else
+                error('No parameters saved during processData');
+            end
+
+            %% Extract photometry and behavior data
+            rawS(x).FPnames = data.acq.FPnames;
+            rawS(x).rawFP = data.acq.FP;
+            rawS(x).rawFs = rawFs;
+            if isfield(data,'final')
+                if isfield(data.final,'mov')
+                    if ~isempty(data.final.mov.onsets)
+                        rawS(x).on = data.final.mov.onsets.*dsRate;
+                        rawS(x).off = data.final.mov.offsets.*dsRate;
+                    end
+                    if ~isempty(data.final.mov.onsetsRest)
+                        rawS(x).onRest = data.final.mov.onsetsRest.*dsRate;
+                        rawS(x).offRest = data.final.mov.offsetsRest.*dsRate;
+                    end
                 end
             end
-        end
-        if isfield(data.final,'rew')
-            if isfield(data.final.rew,'onset')
-                rawS(x).reward = data.final.rew.onset.*dsRate;
+            if isfield(data.final,'rew')
+                if isfield(data.final.rew,'onset')
+                    rawS(x).reward = data.final.rew.onset.*dsRate;
+                end
             end
+            fprintf('DONE.\n');
+            waitbar(f/length(fName),h);
+
         end
-        fprintf('DONE.\n');
-        waitbar(f/length(fName),h);
-        
+        close(h);
+        if isempty(rawS(1).rawFs); rawS(1) = []; end
     end
-    close(h);
-    if isempty(rawS(1).rawFs); rawS(1) = []; end
 
     %% Parse photometry signal during specified behavioral state
     behState = menu('Select behavioral state','Immobility','Locomotion','Reward','Full Trace');
@@ -99,6 +110,7 @@ function rawS = extractRaw_fft(fPath, fName)
                 end
                 idx_imm = idx_imm(~ismember(idx_imm, idx_rew)); % exclude reward from immobility indices
                 rawS(x).fp_sub = rawS(x).rawFP{y}(idx_imm); % extract signal during immobility
+                rawS(x).behState = 'immobility';
                 waitbar(x/length(rawS),h);
             end; close(h);
         case 2
@@ -118,6 +130,7 @@ function rawS = extractRaw_fft(fPath, fName)
                 end
                 idx_loc = idx_loc(~ismember(idx_loc, idx_rew)); % exclude reward from locomotion indices
                 rawS(x).fp_sub = rawS(x).rawFP{y}(idx_loc); % extract signal during locomotion
+                rawS(x).behState = 'locomotion';
                 waitbar(x/length(rawS),h);
             end; close(h);
         case 3
@@ -129,6 +142,7 @@ function rawS = extractRaw_fft(fPath, fName)
                     rewWindow = rawS(x).rawFs;
                     idx_rew = extractEventST([1:nSampRaw]', floor(rawS(x).reward), floor(rawS(x).reward)+rewWindow, 1); % identify recording indices during reward
                     rawS(x).fp_sub = rawS(x).rawFP{y}(idx_rew); % extract signal during reward
+                    rawS(x).behState = 'reward';
                 else
                     error('no reward');
                 end
@@ -137,6 +151,7 @@ function rawS = extractRaw_fft(fPath, fName)
         case 4
             for x = 1:length(rawS)
                 rawS(x).fp_sub = rawS(x).rawFP{y}; % full trace
+                rawS(x).behState = 'full';
             end
     end
     rawS(rmv == 1) = []; % remove recordings where no fp_sub extracted

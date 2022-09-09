@@ -43,9 +43,11 @@ fluorophore = answer{1};
 plotYes = answer{2};
 
 %% LOAD RAW SIGNALS INTO WORKSPACE
-loaded = menu('Already loaded raw data into workspace?','yes','no');
+loaded = menu('Already loaded raw data into workspace?','yes','yes but update','no');
 switch loaded
     case 2
+        rawS = extractRaw_fft(rawS);
+    case 3
         %% Select .mat files you want to add to summary data structu
         fPath = 'R:\tritsn01labspace\'; 
         [fName,fPath] = uigetfile([fPath,'*.mat'],'MultiSelect','On');
@@ -71,8 +73,10 @@ norm = tmpNorm;
 fprintf('Normalization done! \n');
 
 %% Subtract stable fluorophore (GFP/tdTomato) signal
-[fName_flu,fPath_flu] = uigetfile([fPath,'*.mat'],'Select GFP+tdTomato for FFT file','MultiSelect','Off');
-load(fullfile(fPath_flu,fName_flu));
+if ~exist('norm_gfp','var') && ~exist('norm_antd1d2','var')
+    [fName_flu,fPath_flu] = uigetfile([fPath,'*.mat'],'Select GFP+tdTomato for FFT file','MultiSelect','Off');
+    load(fullfile(fPath_flu,fName_flu));
+end
 
 sub_1 = [norm]; % SUBTRACT
 switch fluorophore
@@ -105,7 +109,7 @@ switch plotYes
             xlabel('Frequency'); ylabel('Power (a.u.)');
             xlim([-1 flog(f == 50)]); xticks([-2:2]); xticklabels({'0.01','0.1','1','10','100'});
             legend({rawS.rec});
-            title(sprintf('FFT %s',behState)); axis square
+            title(sprintf('FFT %s',rawS(1).behState)); axis square
         subplot(1,3,2); hold on
             shadederrbar(flog(1:ds:end), nanmean(sub_mat((1:ds:end),:),2), SEM(sub_mat((1:ds:end),:),2), 'r'); % Plot FFT averaged across all recordings
             plot([-2 2],[0 0],'-','Color',[0 0 0 0.3]); % Line at 0 power
@@ -113,7 +117,7 @@ switch plotYes
             plot([flog(f == range_auc(2)) flog(f == range_auc(2))],[-0.1 0.4],'-','Color',[0 0 0 0.3]); % Line at 4 Hz 
             xlabel('Frequency'); ylabel('Power (a.u.)');
             xlim([-1 flog(f == 50)]); xticks([-2:2]); xticklabels({'0.01','0.1','1','10','100'});
-            title(sprintf('FFT %s (n = %d)',behState,nAn)); axis square
+            title(sprintf('FFT %s (n = %d)',rawS(1).behState,nAn)); axis square
         subplot(1,3,3); hold on
             j1 = 0.8; j2 = 1.2; jit = j1 + (j2-j1).*rand(nAn,1); % jitter
             plot(jit, auc, '.k', 'MarkerSize', 20); % Plot area under curve power data points for each recording
