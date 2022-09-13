@@ -3,6 +3,7 @@ function [rawS] = extractRaw_fft(varargin)
 %%structure and parse by specified behavioral state, for FFT analysis with
 %%function getFft
 %
+% [rawS] = extractRaw_fft() - extract new data into structure
 % [rawS] = extractRaw_fft(fPath, fName) - extract new data into structure
 % [rawS] = extractRaw_fft(rawS) - only parse already extracted data
 %
@@ -28,6 +29,9 @@ function [rawS] = extractRaw_fft(varargin)
 %
     %% INPUTS
     switch nargin
+        case 0
+            [fName,fPath] = uigetfile(['*.mat'],'MultiSelect','On');
+            if ~iscell(fName); fName = {fName}; end
         case 2
             fPath = varargin{1};
             fName = varargin{2};
@@ -37,7 +41,7 @@ function [rawS] = extractRaw_fft(varargin)
     end
     
     %% Extract data
-    if nargin == 2 % If need to load data into new structure
+    if nargin ~= 1 % If need to load data into new structure
         rawS = struct;
         h = waitbar(0, 'Extracting raw photometry signals into structure');
         for f = 1:length(fName)

@@ -30,14 +30,11 @@
 %% INPUTS
 range_norm = [0.1 100]; % Range for normalization of FFT output, in Hz
 range_auc = [0.5 4]; % Range for calculation of area under the curve, in Hz
-fluorophore = 'green'; % Options: 'green','red' -- green: use GFP, red: use tdTomato for subtraction
+fluorophore = 'red'; % Options: 'green','red' -- green: use GFP, red: use tdTomato for subtraction
 plotYes = 'yes'; % Options: 'yes','no' -- yes plot, no plot
 
-answer = inputdlg({...
-    'Fluorophore: (green, red)',...
-    'Plot FFT output? (yes, no)'},...
-    'Inputs for FFT', [1 40],...
-    {fluorophore,plotYes});
+answer = inputdlg({'Fluorophore: (green, red)','Plot FFT output? (yes, no)'},...
+    'Inputs for FFT', [1 40],{fluorophore,plotYes});
 
 fluorophore = answer{1};
 plotYes = answer{2};
@@ -74,7 +71,7 @@ fprintf('Normalization done! \n');
 
 %% Subtract stable fluorophore (GFP/tdTomato) signal
 if ~exist('norm_gfp','var') && ~exist('norm_antd1d2','var')
-    [fName_flu,fPath_flu] = uigetfile([fPath,'*.mat'],'Select GFP+tdTomato for FFT file','MultiSelect','Off');
+    [fName_flu,fPath_flu] = uigetfile(['*.mat'],'Select GFP+tdTomato for FFT file','MultiSelect','Off');
     load(fullfile(fPath_flu,fName_flu));
 end
 
