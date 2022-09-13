@@ -3,7 +3,7 @@
 % Anya Krok, September 2022
 %
 %% INPUTS
-infOptions = {'saline','iGluR antag','nAChR antag','mAChR antag','D1R/D2R antag'};
+infOptions = {'saline','iGluR antag','nAChR antag','mAChR antag','D1/2R antag'};
 infWindow = [20 40]; % window to analyze after infusion, in minutes
 if ~exist('cannula'); cannula = struct; end
 
