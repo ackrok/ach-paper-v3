@@ -32,7 +32,7 @@ switch nargin
         %% Select .mat files you want to add to summary data structu
         fPath = 'R:\tritsn01labspace\'; 
         [fName,fPath] = uigetfile([fPath,'*.mat'],'MultiSelect','On');
-        rawS = extractRaw_fft(fPath,fName);
+        rawS = extractRaw_fft_cannula(fPath,fName);
 end
 if ~exist('rawS','var'); error('No variable called rawS exists'); end
 

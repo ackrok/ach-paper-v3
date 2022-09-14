@@ -49,10 +49,11 @@ function [rawS] = extractRaw_fft_cannula(varargin)
         for f = 1:length(fName)
             fprintf('Extracting raw photometry data %s ... ',fName{f});
             load(fullfile(fPath,fName{f})); % Load raw data file
-            [an,b] = strtok(fName{f},'_'); day = strtok(b,'_'); % Parse file name
+            [an,b] = strtok(fName{f},'_'); [day,b] = strtok(b,'_'); [inf,~] = strtok(b,'_'); % Parse file name
             x = 1 + length(rawS);
             rawS(x).rec = [an,'-',day]; 
             rawS(x).site = 'DLS'; % CHANGE or remove
+            rawS(x).inf = inf;
 
             %% Pull parameters required for this analysis
             if isfield(data.gen,'params')
@@ -119,6 +120,7 @@ function [rawS] = extractRaw_fft_cannula(varargin)
                 win_inf = window.*rawS(x).rawFs; % convert infusion window into samples
                 idx_imm = idx_imm(idx_imm > win_inf(1) & idx_imm < win_inf(2)); % exclude segments outside of post infusion window
                 rawS(x).fp_sub = rawS(x).rawFP{y}(idx_imm); % extract signal during immobility
+                rawS(x).fp_lbl = rawS(x).FPnames{y};
                 rawS(x).behState = 'immobility';
                 waitbar(x/length(rawS),h);
             end; close(h);
@@ -160,6 +162,7 @@ function [rawS] = extractRaw_fft_cannula(varargin)
         case 4
             for x = 1:length(rawS)
                 rawS(x).fp_sub = rawS(x).rawFP{y}; % full trace
+                rawS(x).fp_lbl = rawS(x).FPnames{y};
                 rawS(x).behState = 'full';
             end
     end

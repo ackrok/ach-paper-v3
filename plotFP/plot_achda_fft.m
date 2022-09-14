@@ -30,14 +30,13 @@
 %% INPUTS
 range_norm = [0.1 100]; % Range for normalization of FFT output, in Hz
 range_auc = [0.5 4]; % Range for calculation of area under the curve, in Hz
-fluorophore = 'red'; % Options: 'green','red' -- green: use GFP, red: use tdTomato for subtraction
+% fluorophore = 'red'; % Options: 'green','red' -- green: use GFP, red: use tdTomato for subtraction
 plotYes = 'yes'; % Options: 'yes','no' -- yes plot, no plot
 
-answer = inputdlg({'Fluorophore: (green, red)','Plot FFT output? (yes, no)'},...
-    'Inputs for FFT', [1 40],{fluorophore,plotYes});
-
-fluorophore = answer{1};
-plotYes = answer{2};
+% answer = inputdlg({'Fluorophore: (green, red)','Plot FFT output? (yes, no)'},...
+%     'Inputs for FFT', [1 40],{fluorophore,plotYes});
+% fluorophore = answer{1};
+% plotYes = answer{2};
 
 %% LOAD RAW SIGNALS INTO WORKSPACE
 loaded = menu('Already loaded raw data into workspace?','yes','yes but update','no');
@@ -76,10 +75,10 @@ if ~exist('norm_gfp','var') && ~exist('norm_antd1d2','var')
 end
 
 sub_1 = [norm]; % SUBTRACT
-switch fluorophore
-    case 'green'; sub_2 = norm_gfp; % FFT ouput: GFP fluorescence signal, average over n = 3 mice
-    % case 'red'; sub_2 = norm_tdt; % FFT ouput: tdTomato fluorescence signal, average over n = 3 mice
-    case 'red'; sub_2 = norm_antd1d2; % FFT ouput: rDA fluorescence signal during infusion of DA receptor antagonist, average over n = 4 mice
+switch rawS(1).fp_lbl
+    case 'ACh'; sub_2 = norm_gfp; % FFT ouput: GFP fluorescence signal, average over n = 3 mice
+    % case 'DA'; sub_2 = norm_tdt; % FFT ouput: tdTomato fluorescence signal, average over n = 3 mice
+    case 'DA'; sub_2 = norm_antd1d2; % FFT ouput: rDA fluorescence signal during infusion of DA receptor antagonist, average over n = 4 mice
 end
 sub_mat = []; for x = 1:size(sub_1,2); sub_mat(:,x) = sub_1(:,x) - nanmean(sub_2,2); end % Subtract avg FFT for mAChR antagonist
 fprintf('Subtraction of %s fluorophore done! \n', fluorophore);
@@ -106,7 +105,7 @@ switch plotYes
             xlabel('Frequency'); ylabel('Power (a.u.)');
             xlim([-1 flog(f == 50)]); xticks([-2:2]); xticklabels({'0.01','0.1','1','10','100'});
             legend({rawS.rec});
-            title(sprintf('FFT %s',rawS(1).behState)); axis square
+            title(sprintf('%s FFT %s',rawS(1).fp_lbl,rawS(1).behState)); axis square
         subplot(1,3,2); hold on
             shadederrbar(flog(1:ds:end), nanmean(sub_mat((1:ds:end),:),2), SEM(sub_mat((1:ds:end),:),2), 'r'); % Plot FFT averaged across all recordings
             plot([-2 2],[0 0],'-','Color',[0 0 0 0.3]); % Line at 0 power
@@ -114,7 +113,7 @@ switch plotYes
             plot([flog(f == range_auc(2)) flog(f == range_auc(2))],[-0.1 0.4],'-','Color',[0 0 0 0.3]); % Line at 4 Hz 
             xlabel('Frequency'); ylabel('Power (a.u.)');
             xlim([-1 flog(f == 50)]); xticks([-2:2]); xticklabels({'0.01','0.1','1','10','100'});
-            title(sprintf('FFT %s (n = %d)',rawS(1).behState,nAn)); axis square
+            title(sprintf('%s FFT %s (n = %d)',rawS(1).fp_lbl,rawS(1).behState,nAn)); axis square
         subplot(1,3,3); hold on
             j1 = 0.8; j2 = 1.2; jit = j1 + (j2-j1).*rand(nAn,1); % jitter
             plot(jit, auc, '.k', 'MarkerSize', 20); % Plot area under curve power data points for each recording

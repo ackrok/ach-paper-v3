@@ -47,11 +47,10 @@ function [rawS] = extractRaw_fft(varargin)
         for f = 1:length(fName)
             fprintf('Extracting raw photometry data %s ... ',fName{f});
             load(fullfile(fPath,fName{f})); % Load raw data file
-            [an,b] = strtok(fName{f},'_'); [day,b] = strtok(b,'_'); [inf,~] = strtok(b,'_'); % Parse file name
+            [an,b] = strtok(fName{f},'_'); [day] = strtok(b,'_'); % Parse file name
             x = 1 + length(rawS);
             rawS(x).rec = [an,'-',day]; 
             rawS(x).site = 'DLS'; % CHANGE or remove
-            rawS(x).inf = inf;
 
             %% Pull parameters required for this analysis
             if isfield(data.gen,'params')
