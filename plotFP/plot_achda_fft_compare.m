@@ -17,10 +17,10 @@
 %% INPUTS
 nComp = 2; % Number of comparisons to be made
 norm = cell(1,nComp);
-norm{1} = []; % CHANGE
-norm{2} = []; % CHANGE
-lgd = {'DLS','DMS'};
-clr = {'k','m'};
+norm{1} = norm_sal; % CHANGE
+norm{2} = norm_iglu; % CHANGE
+lgd = {'saline','iGluR'}; % CHANGE
+clr = {'k','g'};
 nAn = size(norm{2},2);
 
 %% LOAD pre-analyzed signals into workspace

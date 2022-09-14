@@ -22,6 +22,7 @@ if ~exist('beh','var'); error('No variable called beh exists'); end
 plotSingleTrial = 0; % CHANGE, if = 0 then will not plot single trial data;
 lickWithin = 0.25; %CHANGE, lick within this window
 winRew = [-1 2]; % CHANGE, window for aligning signal to rewarded trials
+winBase = [-4 -1]; % window for baseline
 winAcc = [-1 1]; % CHANGE, window for aligning signal to acceleration
 NumStd = 2; % CHANGE, for immobility trough/peak analysis
 
@@ -48,10 +49,20 @@ case 1
     figure; 
     for x = 1:length(beh)
         subplot(length(beh),1,x); hold on
+        Fs = beh(x).Fs;
         for y = 1:length(beh(x).FP); clr = {'g','m'};
             plot(beh(x).time, beh(x).FP{y}, clr{y});
         end
-        plot(beh(x).time, -5+getAcc(beh(x).vel),'r');
+        if isfield(beh,'vel')
+            plot(beh(x).time, -5+getAcc(beh(x).vel),'r');
+        end
+        if isfield(beh,'reward')
+            rew = beh(x).reward./Fs; % reward delivery times, in seconds
+            lick = beh(x).lick./Fs; % lick times, in seconds
+            plot([rew,rew]', [0;10].*ones(2,length(rew)), 'b', 'LineWidth', 1.5);
+            [~, ~, lickNew] = extractRewardedTrials(rew, lick, [0 lickWithin]);
+            plot([lickNew,lickNew]', [-4;-2].*ones(2,length(lickNew)), 'k');
+        end
         ylabel('%dF/F')
         title(sprintf('%s',beh(x).rec));
     end
@@ -86,7 +97,9 @@ case {2, 3}
             sig = beh(x).FP{y}; % signal that will be aligned to event times
             sig = sig - nanmean(sig); % subtract mean of trace to center on zero
             [mat, time] = getSTA(sig, ev, Fs, [winRew(1), winRew(end)]);
-            shadederrbar(time, nanmean(mat,2), SEM(mat,2), clr{y}); % plot average across trials
+            [matBase] = getSTA(sig, ev, Fs, [winBase(1), winBase(end)]);
+            matBase = nanmean(matBase,1); % average across baseline window
+            shadederrbar(time, nanmean(mat - matBase,2), SEM(mat - matBase,2), clr{y}); % plot average across trials
         end
         xlabel('latency to reward (s)'); ylabel('FP (%dF/F)');
         title(sprintf('%s (%d trials)',beh(x).rec,length(find(rewYes))),'Interpreter','none');
@@ -179,7 +192,9 @@ case 5
             sig = beh(x).FP{y}; % signal that will be aligned to event times
             sig = sig - nanmean(sig); % subtract mean of trace to center on zero
             [mat, time] = getSTA(sig, ev, Fs, [winAcc(1), winAcc(end)]);
-            shadederrbar(time, nanmean(mat,2), SEM(mat,2), clr{y}); % plot average across trials
+            [matBase] = getSTA(sig, ev, Fs, [winBase(1), winBase(end)]);
+            matBase = nanmean(matBase,1); % average across baseline window
+            shadederrbar(time, nanmean(mat - matBase,2), SEM(mat - matBase,2), clr{y}); % plot average across trials
         end
         xlabel('latency to accel (s)'); ylabel('FP (%dF/F)');
         title(sprintf('%s',beh(x).rec),'Interpreter','none');
