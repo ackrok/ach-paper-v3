@@ -41,13 +41,13 @@ function [rewYes, rewNo, lickNew] = extractRewardedTrials(rewDelivery, lick, var
     cts = peth.cts{1}; % Lick counts in 1ms bins for each reward trial
     rew_lick0 = find(sum(cts,1) == 0); % Find reward index where total licks within window is 0
 
-    % bin = 1/1000; window = [-0.25 0];
-    % peth = getClusterPETH(lick, rew, bin, window);
-    % rew_prewlick = find(sum(peth.cts{1},1) >= 1); % Find reward index for trials where mouse licks preceding reward
-    rew_prewlick = [];
-    
-    rewDelivery([rew_lick0, rew_prewlick]) = nan; 
-    cts(:, [rew_lick0, rew_prewlick]) = nan; % Remove non-rewarded trials and trials where mouse licks preceding reward
+    rew_prelick = [];
+%     bin = 1/1000; window = [-0.2 0];
+%     peth = getClusterPETH(lickNew, rewDelivery, bin, window);
+%     rew_prelick = find(sum(peth.cts{1},1) >= 1); % Find reward index for trials where mouse licks preceding reward
+        
+    rewDelivery([rew_lick0, rew_prelick]) = nan; 
+    cts(:, [rew_lick0, rew_prelick]) = nan; % Remove non-rewarded trials and trials where mouse licks preceding reward
 
     rewNo = find(isnan(rewDelivery)); % Index of deliveries where animal did not lick to receive reward
     rewYes = find(~isnan(rewDelivery)); % Index of delivieries where animal collected reward
