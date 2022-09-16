@@ -81,7 +81,6 @@ switch rawS(1).fp_lbl
     case 'DA'; sub_2 = norm_antd1d2; % FFT ouput: rDA fluorescence signal during infusion of DA receptor antagonist, average over n = 4 mice
 end
 sub_mat = []; for x = 1:size(sub_1,2); sub_mat(:,x) = sub_1(:,x) - nanmean(sub_2,2); end % Subtract avg FFT for mAChR antagonist
-fprintf('Subtraction of %s fluorophore done! \n', fluorophore);
 
 %% AUC in specified frequency band
 auc = [];

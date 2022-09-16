@@ -1,7 +1,9 @@
-function beh = extractBeh(fPath, fName, varargin)
+function beh = extractBeh(varargin)
 %%Extract processed data from multiple recordings into single structure
 %
-% [beh] = extractBeh(fPath, fName)
+% [beh] = extractBeh() - load from files, will be prompted to select
+% [beh] = extractBeh(fPath, fName) - load from specified files
+% [beh] = extractBeh(beh) - to add to existing structure
 % [beh] = extractBeh(fPath, fName, beh) - to add to existing structure
 %
 % Description: Extract processed photometry, locomotion, and/or reward data 
@@ -21,12 +23,26 @@ function beh = extractBeh(fPath, fName, varargin)
 % Anya Krok, January 2021
 
     %% INPUTS
-    if nargin == 3
-        beh = varargin{1};
-    else
-        beh = struct;
+    switch nargin
+        case 0
+            fPath = 'R:\tritsn01labspace\'; 
+            [fName,fPath] = uigetfile([fPath,'*.mat'],'Select data files to add to beh structure','MultiSelect','On');
+            beh = struct;
+        case 1
+            fPath = 'R:\tritsn01labspace\'; 
+            [fName,fPath] = uigetfile([fPath,'*.mat'],'Select data files to add to beh structure','MultiSelect','On');
+            beh = varargin{1};
+        case 2
+            fPath = varargin{1};
+            fName = varargin{2};
+            beh   = struct;
+        case 3
+            fPath = varargin{1};
+            fName = varargin{2};
+            beh   = varargin{3};
     end
     if ~iscell(fName); fName = {fName}; end
+    fName = sort(fName);
     
     %%
     for f = 1:length(fName) 
@@ -76,7 +92,6 @@ function beh = extractBeh(fPath, fName, varargin)
             beh(x).task = 'reward';
             beh(x).reward = data.final.rew.onset;    % Reward delivery time in sampling freq (data.gen.Fs), NOT in seconds
             beh(x).lick = data.final.lick.onset;     % Lick times in sampling freq (data.gen.Fs), NOT in seconds
-            beh(x).lickVec = data.final.lick.trace;  % Lick trace
         end
 
         %%

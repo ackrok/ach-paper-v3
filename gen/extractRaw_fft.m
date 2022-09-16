@@ -39,6 +39,8 @@ function [rawS] = extractRaw_fft(varargin)
         case 1
             rawS = varargin{1};
     end
+    behState = menu('Select behavioral state','Immobility','Locomotion','Reward','Full Trace');
+    pickFP = menu('Select photometry signal','ACh','DA');
     
     %% Extract data
     if nargin ~= 1 % If need to load data into new structure
@@ -93,15 +95,13 @@ function [rawS] = extractRaw_fft(varargin)
     end
 
     %% Parse photometry signal during specified behavioral state
-    behState = menu('Select behavioral state','Immobility','Locomotion','Reward','Full Trace');
-    y = menu('Select photometry signal',rawS(1).FPnames);
     rmv = zeros(length(rawS),1);
     switch behState
         case 1
             fprintf('Extracting signal during %s (this will take a while!) ...',behState)
             h = waitbar(0,'Extracting signal during behavioral state');
             for x = 1:length(rawS)
-                nSampRaw = length(rawS(x).rawFP{y});
+                nSampRaw = length(rawS(x).rawFP{pickFP});
                 if isfield(rawS,'reward')
                     rewWindow = rawS(x).rawFs;
                     idx_rew = extractEventST([1:nSampRaw]', floor(rawS(x).reward), floor(rawS(x).reward)+rewWindow, 1); % identify recording indices during reward
@@ -113,8 +113,8 @@ function [rawS] = extractRaw_fft(varargin)
                     rmv(x) = 1; % change index to be 1, this recording will be removed
                 end
                 idx_imm = idx_imm(~ismember(idx_imm, idx_rew)); % exclude reward from immobility indices
-                rawS(x).fp_sub = rawS(x).rawFP{y}(idx_imm); % extract signal during immobility
-                rawS(x).fp_lbl = rawS(x).FPnames{y};
+                rawS(x).fp_sub = rawS(x).rawFP{pickFP}(idx_imm); % extract signal during immobility
+                rawS(x).fp_lbl = rawS(x).FPnames{pickFP};
                 rawS(x).behState = 'immobility';
                 waitbar(x/length(rawS),h);
             end; close(h);
@@ -122,7 +122,7 @@ function [rawS] = extractRaw_fft(varargin)
             fprintf('Extracting signal during %s (this will take a while!) ...',behState)
             h = waitbar(0,'Extracting signal during behavioral state');
             for x = 1:length(rawS)
-                nSampRaw = length(rawS(x).rawFP{y});
+                nSampRaw = length(rawS(x).rawFP{pickFP});
                 if isfield(rawS,'reward')
                     rewWindow = rawS(x).rawFs;
                     idx_rew = extractEventST([1:nSampRaw]', floor(rawS(x).reward), floor(rawS(x).reward)+rewWindow, 1); % identify recording indices during reward
@@ -134,8 +134,8 @@ function [rawS] = extractRaw_fft(varargin)
                     rmv(x) = 1; % change index to be 1, this recording will be removed 
                 end
                 idx_loc = idx_loc(~ismember(idx_loc, idx_rew)); % exclude reward from locomotion indices
-                rawS(x).fp_sub = rawS(x).rawFP{y}(idx_loc); % extract signal during locomotion
-                rawS(x).fp_lbl = rawS(x).FPnames{y};
+                rawS(x).fp_sub = rawS(x).rawFP{pickFP}(idx_loc); % extract signal during locomotion
+                rawS(x).fp_lbl = rawS(x).FPnames{pickFP};
                 rawS(x).behState = 'locomotion';
                 waitbar(x/length(rawS),h);
             end; close(h);
@@ -143,12 +143,12 @@ function [rawS] = extractRaw_fft(varargin)
             fprintf('Extracting signal during %s (this will take a while!) ...',behState)
             h = waitbar(0,'Extracting signal during behavioral state');
             for x = 1:length(rawS)
-                nSampRaw = length(rawS(x).rawFP{y});
+                nSampRaw = length(rawS(x).rawFP{pickFP});
                 if isfield(rawS,'reward')
                     rewWindow = rawS(x).rawFs;
                     idx_rew = extractEventST([1:nSampRaw]', floor(rawS(x).reward), floor(rawS(x).reward)+rewWindow, 1); % identify recording indices during reward
-                    rawS(x).fp_sub = rawS(x).rawFP{y}(idx_rew); % extract signal during reward
-                    rawS(x).fp_lbl = rawS(x).FPnames{y};
+                    rawS(x).fp_sub = rawS(x).rawFP{pickFP}(idx_rew); % extract signal during reward
+                    rawS(x).fp_lbl = rawS(x).FPnames{pickFP};
                     rawS(x).behState = 'reward';
                 else
                     error('no reward');
@@ -157,8 +157,8 @@ function [rawS] = extractRaw_fft(varargin)
             end; close(h);
         case 4
             for x = 1:length(rawS)
-                rawS(x).fp_sub = rawS(x).rawFP{y}; % full trace
-                rawS(x).fp_lbl = rawS(x).FPnames{y};
+                rawS(x).fp_sub = rawS(x).rawFP{pickFP}; % full trace
+                rawS(x).fp_lbl = rawS(x).FPnames{pickFP};
                 rawS(x).behState = 'full';
             end
     end

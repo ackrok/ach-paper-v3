@@ -16,29 +16,25 @@
 
 %% INPUTS
 nComp = 2; % Number of comparisons to be made
-norm = cell(1,nComp);
-norm{1} = norm_sal; % CHANGE
-norm{2} = norm_iglu; % CHANGE
-lgd = {'saline','iGluR'}; % CHANGE
-clr = {'k','g'};
-nAn = size(norm{2},2);
+norm_comp = cell(1,nComp);
+norm_comp{1} = [norm_da_female, norm_da_female1]; % CHANGE
+norm_comp{2} = [norm_da_male, norm_da_male1]; % CHANGE
+lgd = {'DA female','DA male'}; % CHANGE
+clr = {'k','m'};
+nAn = size(norm_comp{2},2);
 
 %% LOAD pre-analyzed signals into workspace
-loaded = menu('Is there working matrix NORM in workspace?','yes','no');
-switch loaded
-    case 2
-        fPath = 'R:\tritsn01labspace\'; 
-        [fName,fPath] = uigetfile([fPath,'*.mat'],'MultiSelect','Off');
+if ~exist('norm_comp','var')
+    [fName,fPath] = uigetfile(['*.mat'],'Load file containing FFT output variable, norm_comp','MultiSelect','Off');
 end
-if ~exist('norm','var'); error('No variable called norm exists'); end
 
 %% LOAD fluorophore (GFP/tdTomato) signal
 if ~exist('norm_gfp','var') && ~exist('norm_antd1d2','var') && ~exist('norm_tdt','var')
-    [fName_flu,fPath_flu] = uigetfile([fPath,'*.mat'],'Select GFP+tdTomato for FFT file','MultiSelect','Off');
+    [fName_flu,fPath_flu] = uigetfile(['*.mat'],'Select GFP+tdTomato for FFT file','MultiSelect','Off');
     load(fullfile(fPath_flu,fName_flu));
 end
 %
-fluorophore = menu('Fluorophore FFT signal to subtract','green','red');
+fluorophore = menu(sprintf('Fluorophore FFT signal to use for: %s, %s',lgd{1},lgd{2}),'green','red');
 %
 switch fluorophore
     case 1; sub = norm_gfp; % FFT ouput: GFP fluorescence signal, average over n = 3 mice
@@ -48,19 +44,19 @@ end
 %% SUBTRACT stable fluorophore (GFP/tdTomato) signal
 sub_comp = cell(1,nComp);
 for y = 1:nComp
-    for x = 1:size(norm{y},2)
-        sub_comp{y}(:,x) = norm{y}(:,x) - nanmean(sub,2); 
+    for x = 1:size(norm_comp{y},2)
+        sub_comp{y}(:,x) = norm_comp{y}(:,x) - nanmean(sub,2); 
     end
 end
 
 %% AUC in specified frequency band
 range_auc = [0.5 4]; % Range for calculation of area under the curve, in Hz
-auc = nan(nAn, nComp);
+auc_comp = cell(1,2);
 f_sub = 10.^(flog); % Regenerate frequency vector from log(freq)
 r_auc = [find(f_sub == range_auc(1)):find(f_sub == range_auc(2))]; % extract AUC from [0.5 4] Hz
 for y = 1:nComp
-    for x = 1:nAn
-        auc(x,y) = trapz(sub_comp{y}(r_auc,x))/length(r_auc);
+    for x = 1:size(sub_comp{y},2)
+        auc_comp{y}(x) = trapz(sub_comp{y}(r_auc,x))/length(r_auc);
     end
 end
 
@@ -79,10 +75,18 @@ subplot(1,2,1); hold on
     xlim([-1 flog(f == 50)]); xticks([-2:2]); xticklabels({'0.01','0.1','1','10','100'});
     title(sprintf('FFT (n = %d)',nAn)); axis square
 subplot(1,2,2); hold on
-    plot(auc', '--.k', 'MarkerSize', 20); 
-    errorbar([0.75 2.25],nanmean(auc), SEM(auc,1), '.', 'MarkerSize', 20, 'Color', clr{2});
+    if diff(cellfun(@length,auc_comp)) == 0
+        a = [auc_comp{1}; auc_comp{2}];
+        plot(a, '--.k', 'MarkerSize', 20); % Plot matched data points
+        [~,p] = ttest(a(1,:),a(2,:)); % Paired test 
+    else
+        a = nan(2,max(cellfun(@length,auc_comp)));
+        for y = 1:2; a(y,[1:length(auc_comp{y})]) = auc_comp{y}; end
+        plot(a, '.k', 'MarkerSize', 20); % Plot two-sample data points
+        [~,p] = ttest2(a(1,:),a(2,:)); % Two-sample test
+    end
+    errorbar([0.75 2.25],nanmean(a,2), SEM(a,2), '.', 'MarkerSize', 20, 'Color', clr{2});
     xlim([0.5 2.5]); xticks([1 2]); xticklabels(lgd);
     ylabel('Power (a.u.)'); ylim([0 0.5]); yticks([0:0.1:0.5]);
-    [~,p] = ttest(auc(:,1),auc(:,2));
     title(sprintf('AUC p = %1.2f',p)); axis square
 movegui(gcf,'center');

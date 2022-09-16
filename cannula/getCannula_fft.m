@@ -20,9 +20,6 @@ function [norm, f, flog, p1_mat, rawS] = getCannula_fft(varargin)
 %
 % Anya Krok, July 2022
 
-%% INPUTS
-range_norm = [0.1 100]; % Range for normalization of FFT output, in Hz
-
 %% LOAD RAW SIGNALS INTO WORKSPACE
 switch nargin
     case 1
@@ -41,6 +38,7 @@ if ~exist('rawS','var'); error('No variable called rawS exists'); end
 fprintf('FFT done! \n');
 
 %% Normalize FFT
+range_norm = [0.1 100]; % Range for normalization of FFT output, in Hz
 tmpNorm = [];
 r = [find(f == range_norm(1)):find(f == range_norm(2))]; % Restrict to [0.01 100]
 flog = log10(f(r)); % Log-scale frequency vector
