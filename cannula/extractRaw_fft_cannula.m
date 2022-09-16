@@ -34,10 +34,12 @@ function [rawS] = extractRaw_fft_cannula(varargin)
         case 0
             [fName,fPath] = uigetfile('*.mat','MultiSelect','On');
             if ~iscell(fName); fName = {fName}; end
+            fName = sort(fName);
         case 2
             fPath = varargin{1};
             fName = varargin{2};
             if ~iscell(fName); fName = {fName}; end
+            fName = sort(fName);
         case 1
             rawS = varargin{1};
     end

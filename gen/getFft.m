@@ -25,10 +25,12 @@ p1_output = [];
 h = waitbar(0, 'FFT photometry signals');
 for x = 1:length(rawS)
     vec = [rawS(x).fp_sub]; 
-    if isempty(vec); continue; end
     Fs = rawS(x).rawFs;
-    
     needL = 2500*Fs;
+    if isempty(vec) 
+        p1_output(:,x) = nan(1+(needL/2),1);
+        continue
+    end
     vec = repmat(vec,[ceil(needL/length(vec)) 1]);
     vec = vec(1:needL);
     T = 1/Fs;               % Sampling period
@@ -41,7 +43,7 @@ for x = 1:length(rawS)
     f = Fs*(0:(L/2))/L;     % Frequency domain vector
     P1 = medfilt1(P1);      % Median filter initial FFT
     P1 = movmean(P1,500);   % Smooth FFT output
-    p1_output = [p1_output, P1]; % Concatenate output
+    p1_output(:,x) = P1; % Concatenate output
     waitbar(x/length(rawS),h);
 end
 close(h)
