@@ -2,7 +2,8 @@ function [rewYes, rewNo, lickNew] = extractRewardedTrials(rewDelivery, lick, var
 %Extract index for rewarded and non-rewarded trials based on whether animal
 %licked within specified window
 %
-%   [rewYes, rewNo] = extractRewardedTrials(rewDelivery, lick, window)
+%   [rewYes, rewNo, lickNew] = extractRewardedTrials(rewDelivery, lick)
+%   [rewYes, rewNo, lickNew] = extractRewardedTrials(rewDelivery, lick, window)
 %
 %   Description: This function is for extraction of indices corresponding
 %   to trials where reward was and was not collected, according to whether
@@ -17,6 +18,8 @@ function [rewYes, rewNo, lickNew] = extractRewardedTrials(rewDelivery, lick, var
 %   Output:
 %   - rewYes - Vector with indices for delivery times where reward was
 %   collected
+%   - rewNo - Vector with indices for non-rewarded trials
+%   - lickNew - Vector of lick times
 %
 %   Author: Anya Krok, August 2022
     %%

@@ -1,11 +1,11 @@
-function [rawS] = extractRaw_fft_cannula(varargin)
+function [rawS] = extractRaw_fft_cannula(window, varargin)
 %%Extract raw photometry data from multiple recordings into a single
 %%structure and parse by specified behavioral state, for FFT analysis with
 %%function getFft
 %
-% [rawS] = extractRaw_fft_cannula() - extract new data into structure
-% [rawS] = extractRaw_fft_cannula(fPath, fName) - extract new data into structure
-% [rawS] = extractRaw_fft_cannula(rawS) - only parse already extracted data
+% [rawS] = extractRaw_fft_cannula(window) - extract new data into structure
+% [rawS] = extractRaw_fft_cannula(window, fPath, fName) - extract new data into structure
+% [rawS] = extractRaw_fft_cannula(window, rawS) - only parse already extracted data
 %
 % Description: Extract raw photometry signal from multiple recording files 
 % into a larger structure to be used for FFT analysis with function getFft
@@ -15,6 +15,7 @@ function [rawS] = extractRaw_fft_cannula(varargin)
 % Cannula: restrict signal to post-infusion window, default +20 to +40min
 %
 % INPUTS
+%   'window' - Window, in seconds, used for analyzing infusion effect
 %   'fPath' - Character array containing folder path where data files are
 %       example: 'R:\tritsn01labspace\Anya\FiberPhotometry\AK201-206\220105'
 %   'fName' - Cell array, with each cell containing file names for each
@@ -29,23 +30,23 @@ function [rawS] = extractRaw_fft_cannula(varargin)
 % Anya Krok, January 2022
 %
     %% INPUTS
-    window = [20 40]; window = window.*60; % Infusion window, in seconds
     switch nargin
-        case 0
+        case 1
             [fName,fPath] = uigetfile('*.mat','MultiSelect','On');
             if ~iscell(fName); fName = {fName}; end
             fName = sort(fName);
-        case 2
+        case 3
             fPath = varargin{1};
             fName = varargin{2};
             if ~iscell(fName); fName = {fName}; end
             fName = sort(fName);
-        case 1
+        case 2
             rawS = varargin{1};
     end
-    
+    behState = menu('Select behavioral state','Immobility','Locomotion','Reward','Full Trace');
+    y = menu('Select photometry signal','ACh (1)','DA (2)');
     %% Extract data
-    if nargin ~= 1 % If need to load data into new structure
+    if nargin ~= 2 % If need to load data into new structure
         rawS = struct;
         h = waitbar(0, 'Extracting raw photometry signals into structure');
         for f = 1:length(fName)
@@ -99,29 +100,33 @@ function [rawS] = extractRaw_fft_cannula(varargin)
     end
 
     %% Parse photometry signal during specified behavioral state
-    behState = menu('Select behavioral state','Immobility','Locomotion','Reward','Full Trace');
-    y = menu('Select photometry signal',rawS(1).FPnames);
+%     behState = menu('Select behavioral state','Immobility','Locomotion','Reward','Full Trace');
+%     y = menu('Select photometry signal',rawS(1).FPnames);
     rmv = zeros(length(rawS),1);
     switch behState
         case 1
             fprintf('Extracting signal (this will take a while!) ... \n')
             h = waitbar(0,'Extracting signal during behavioral state');
             for x = 1:length(rawS)
-                nSampRaw = length(rawS(x).rawFP{y});
+                rawFP = rawS(x).rawFP{y}; rawFs = rawS(x).rawFs; % photometry signal
+                nSampRaw = length(rawS(x).rawFP{y}); % number of samples
+                win_inf = window.*rawFs; % convert infusion window into samples
                 if isfield(rawS,'reward')
-                    rewWindow = rawS(x).rawFs;
-                    idx_rew = extractEventST([1:nSampRaw]', floor(rawS(x).reward), floor(rawS(x).reward)+rewWindow, 1); % identify recording indices during reward
+                    rewWindow = rawFs;
+                    rew = rawS(x).reward(rawS(x).reward > win_inf(1) & rawS(x).reward < win_inf(2));
+                    idx_rew = extractEventST([1:nSampRaw]', floor(rew), floor(rew)+rewWindow, 1); % identify recording indices during reward
                 else; idx_rew = [];
                 end
-                idx_imm = extractEventST([1:nSampRaw]', rawS(x).onRest, rawS(x).offRest, 1); % identify recording indices during immobility
+                onRest = rawS(x).onRest(rawS(x).onRest > win_inf(1) & rawS(x).onRest < win_inf(2));
+                offRest = rawS(x).offRest(rawS(x).onRest > win_inf(1) & rawS(x).onRest < win_inf(2));
+                idx_imm = extractEventST([1:nSampRaw]', onRest, offRest, 1); % identify recording indices during immobility
+                idx_imm = idx_imm(idx_imm > win_inf(1) & idx_imm < win_inf(2));
                 if isempty(idx_imm)
                     fprintf('%s - no immobility \n', rawS(x).rec); 
                     rmv(x) = 1; % change index to be 1, this recording will be removed
                 end
                 idx_imm = idx_imm(~ismember(idx_imm, idx_rew)); % exclude reward from immobility indices
-                win_inf = window.*rawS(x).rawFs; % convert infusion window into samples
-                idx_imm = idx_imm(idx_imm > win_inf(1) & idx_imm < win_inf(2)); % exclude segments outside of post infusion window
-                rawS(x).fp_sub = rawS(x).rawFP{y}(idx_imm); % extract signal during immobility
+                rawS(x).fp_sub = rawFP(idx_imm); % extract signal during immobility
                 rawS(x).fp_lbl = rawS(x).FPnames{y};
                 rawS(x).behState = 'immobility';
                 waitbar(x/length(rawS),h);

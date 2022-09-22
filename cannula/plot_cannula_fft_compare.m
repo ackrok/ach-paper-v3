@@ -25,11 +25,13 @@
 %%
 choice = menu('Raw photometry signal loaded into workspace?',...
     'yes','yes but update','no');
+% window = [20 40]; window = window.*60;
+window = [200 500];
 switch choice
     case 3
-        [norm, f, flog, p1_mat, rawS] = getCannula_fft();
+        [norm, f, flog, p1_mat, rawS] = getCannula_fft(window);
     case 2
-        [norm, f, flog, p1_mat, rawS] = getCannula_fft(rawS);
+        [norm, f, flog, p1_mat, rawS] = getCannula_fft(window, rawS);
 end
 
 %% INPUTS - MANUAL
@@ -85,7 +87,8 @@ for y = 1:length(norm_comp)
         sub_comp{y}(:,x) = norm_comp{y}(:,x) - nanmean(sub,2); 
     end
 end
-nAn = size(sub_comp{1},2);
+[~,b] = cellfun(@size, sub_comp);
+nAn = max(b);
 nComp = length(sub_comp);
 
 %% AUC in specified frequency band
@@ -98,13 +101,17 @@ for y = 1:length(sub_comp)
         auc(x,y) = trapz(sub_comp{y}(r_auc,x))/length(r_auc);
     end
 end
+auc(auc == 0) = nan;
+auc(auc < 0) = 0;
 
 %% PLOT
 ds = 50; % Downsample when plotting so figure is smaller in size
 fig = figure; fig.Position(3) = 1375;
 switch lbl_fp
-    case 'ACh'; clr = {'k','g'}; clr2 = [0 0 0 0.2; 0.05 0.75 0.45 0.2];
-    case 'DA'; clr = {'k','m'}; clr2 = [0 0 0 0.2; 1 0 1 0.2];
+    case 'ACh'; clr = {'k','g','r','m','b','c'}; 
+        clr2 = [0 0 0 0.2; 0.05 0.75 0.45 0.2; 0 0 1 0.2];
+    case 'DA'; clr = {'k','m','r'}; 
+        clr2 = [0 0 0 0.2; 1 0 1 0.2; 0 0 1 0.2];
 end
 subplot(1,3,1); hold on
     for y = 1:length(sub_comp)
@@ -116,7 +123,6 @@ subplot(1,3,1); hold on
     ylabel('Power (a.u.)');
     xlabel('Frequency'); xlim([-1 flog(f == 50)]); xticks([-2:2]); xticklabels({'0.01','0.1','1','10','100'});
     title(sprintf('FFT %s', lbl_fp)); axis square
-    legend(lbl_inf);
 subplot(1,3,2); hold on
     for y = 1:length(sub_comp)
         plotme = sub_comp{y}((1:ds:end),:);
@@ -131,9 +137,9 @@ subplot(1,3,2); hold on
     legend({lbl_inf{1},'',lbl_inf{2}});
 subplot(1,3,3); hold on
     plot(auc', '--.k', 'MarkerSize', 20); 
-    errorbar([0.75 2.25],nanmean(auc), SEM(auc,1), '.', 'MarkerSize', 20, 'Color', clr{2});
-    xlim([0.5 2.5]); xticks([1 2]); xticklabels(lbl_inf);
+    errorbar(-0.25+1:size(auc,2),nanmean(auc), SEM(auc,1), '.', 'MarkerSize', 20, 'Color', clr{2});
+    xlim([0.5 0.5+size(auc,2)]); xticks([1:size(auc,2)]); xticklabels(lbl_inf);
     ylabel('Power (a.u.)'); ylim([0 0.5]); yticks([0:0.1:0.5]);
     [~,p] = ttest(auc(:,1),auc(:,2));
-    title(sprintf('AUC p = %1.2f',p)); axis square
+    title(sprintf('AUC p = %1.3f',p)); axis square
 movegui(gcf,'center');

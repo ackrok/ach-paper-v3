@@ -1,8 +1,9 @@
-function [coher_achda, phase_achda, t, f, coher_shuff, phase_shuff] = AK_coherFP(beh)
+function [coher_achda, phase_achda, t, f, coher_shuff, phase_shuff] = AK_coherFP(beh, varargin)
 %Compute coherogram between ACh and DA photometry signals acquired during
 %dual color photometry recordings using Buzsaki function 'MTCoherogram'
 %
 %   [coher_achda, phase_achda, t, f] = AK_coherFP(beh)
+%   [coher_achda, phase_achda, t, f] = AK_coherFP(beh, win)
 %   [coher_achda, phase_achda, t, f, coher_shuff, phase_shuff] = AK_coherFP(beh)
 %
 %   Description: This function is for running cross-correlation analysis on
@@ -13,12 +14,14 @@ function [coher_achda, phase_achda, t, f, coher_shuff, phase_shuff] = AK_coherFP
 %   INPUTS
 %   'beh' - structure with photometry and behavioral data for multiple
 %   recordings, should include beh(x).rec as [an,'-',day]
+%   'win'(optional) - window to restrict analysis to, in seconds
 %   
 %   OUTPUTS
 %
 %   Author: Anya Krok, March 2022
 
 %% INPUTS
+if nargin == 2; win = varargin{1}; end % Window for analysis, in seconds
 aa = [2 1]; % Photometry signal to use as reference is the one listed first
 % e.g. if y = [1 2] then the signal in beh(x).FP{1} will be used as
 % reference signal, while if y = [2 1] then the signal in beh(x).FP{2} will
@@ -30,6 +33,7 @@ nStates = 3; % Number of behavioral states
 %%
 mat = struct;
 h = waitbar(0,'coherogram');
+idxStates = extractBehavioralStates(beh);
 for x = 1:length(beh)  % iterate over all recordings
   
     %% extract signals
@@ -40,19 +44,25 @@ for x = 1:length(beh)  % iterate over all recordings
     fp_mat(:,2) = beh(x).FP{aa(2)}; % extract photometry signal from structure
     fp_mat(:,2) = fp_mat(:,2) - nanmean(fp_mat(:,2)); % subtract baseline (mean of entire photometry signal) from fp
     
-    %% extract indices for behavioral states
-    if isfield(beh,'reward')
-        idx_rew = extractEventST([1:length(fp_mat)]', floor(beh(x).reward), floor(beh(x).reward)+(Fs*2), 1); % identify sample during reward
-    else; idx_rew = []; end
-    idx_mov = extractEventST([1:length(fp_mat)]', beh(x).on, beh(x).off, 1); % identify sample during locomotion
-    idx_mov_nonRew = idx_mov(~ismember(idx_mov, idx_rew)); % exclude reward, include locomotion
-    idx_imm = extractEventST([1:length(fp_mat)]', beh(x).onRest, beh(x).offRest, 1); % identify sample during locomotion
-    idx_imm_nonRew = idx_imm(~ismember(idx_imm, idx_rew)); % exclude reward, include rest
-    idx_c = cell(nStates,1); idx_c{1} = idx_imm_nonRew; idx_c{2} = idx_mov_nonRew; idx_c{3} = idx_rew; % index into cell array for ease of iteration
+    %% adjust indices to retain if within specified window
+    if nargin == 2
+        for z = 1:nStates
+            idxTmp = idxStates{x,z};
+            idxTmp = idxTmp(idxTmp > win(1)*Fs & idxTmp < win(2)*Fs); % retain only indices that are within specified window
+            if ~isempty(idxTmp)
+                needL = 200.*Fs;
+                if length(idxTmp) < needL % ensure that have at least 200 seconds of signal
+                    idxTmp = repmat(idxTmp, [ceil(needL/length(idxTmp)) 1]); % duplicate indices to lengthen signal for processing
+                end
+            end
+            idxStates{x,z} = idxTmp; % re-insert into output structure
+        end
+    end
+    
     %%
     for z = 1:nStates % iterate over behavioral states
-        if ~isempty(idx_c{z})
-            sig = fp_mat(idx_c{z},:); % extract indexes samples 
+        if ~isempty(idxStates{x,z})
+            sig = fp_mat(idxStates{x,z},:); % extract indexes samples 
             [coher,ph,t,f] = bz_MTCoherogram(sig(:,1),sig(:,2),'frequency',Fs,'range',[0 10],'window',10,'overlap',5,'step',5,'tapers',[3 5],'pad',0);
             mat(x).coher(:,z) = nanmean(coher,2); % collapse time dimension
             mat(x).phase(:,z) = nanmean(ph,2); % collapse time dimension
@@ -64,9 +74,9 @@ for x = 1:length(beh)  % iterate over all recordings
     for s = 1:50 % repeat shuffle N times
         % fp_shuff = circshift(fp_shuff, Fs);
         fp_shuff = fp_shuff(randperm(length(fp_shuff)));
-        [idx_c,p] = bz_MTCoherogram(fp_mat(:,1),fp_shuff,'frequency',Fs,'range',[0 10],'window',10,'overlap',5,'step',5,'tapers',[3 5],'pad',0);
-        tmp_coher(:,s) = nanmean(idx_c,2); % collapse time dimension
-        tmp_phase(:,s) = nanmean(p,2); % collapse time dimension
+        [coher,ph] = bz_MTCoherogram(fp_mat(:,1),fp_shuff,'frequency',Fs,'range',[0 10],'window',10,'overlap',5,'step',5,'tapers',[3 5],'pad',0);
+        tmp_coher(:,s) = nanmean(coher,2); % collapse time dimension
+        tmp_phase(:,s) = nanmean(ph,2); % collapse time dimension
     end
     mat(x).coher_shuff = prctile(tmp_coher, [5 50 95], 2); % 5th, 50th, 95th percentiles
     mat(x).phase_shuff = prctile(tmp_phase, [5 50 95], 2); % 5th, 50th, 95th percentiles

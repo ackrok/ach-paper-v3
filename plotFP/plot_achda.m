@@ -13,6 +13,7 @@ if ~exist('beh','var'); error('No variable called beh exists'); end
 [plotOpt,ind] = listdlg('PromptString',{'Select All Plots to Generate',...
     'For Multiple: Hold Ctrl and Select'},'ListString',...
     {'Signal over time',...
+    'Non-baselined signal',...
     'Align to Reward',...
     'Align to Reward+Single Trial',...
     'Align to Reward+1st Lick',...
@@ -69,8 +70,20 @@ case 1
     subplot(length(beh),1,1); legend({beh(x).FPnames{y}, 'acc'});
     subplot(length(beh),1,length(beh)); xlabel('Time (s)'); 
     movegui(gcf,'center');
-
-case {2, 3}
+    
+case 2
+    %% Plot non-baselined photometry
+    clr = {'g','m'};
+    fig = figure; fig.Position(3) = 1000;
+    for x = 1:length(beh)
+        for y = 1:length(beh(x).nbFP)
+            subplot(length(beh), 2, 2*x + (y-2));
+            plot(beh(x).time, beh(x).nbFP{y}, clr{y});
+            title(sprintf('%s n.b. %s', beh(x).rec, beh(x).FPnames{y}));
+        end
+    end
+    
+case {3, 4}
     %% Plot photometry to rewarded trials
     % lickWithin = 0.25; %CHANGE, lick within this window
     % plotSingleTrial = 1; % CHANGE, if = 0 then will not plot single trial data;
@@ -125,7 +138,7 @@ case {2, 3}
     linkaxes(sp,'y');
     movegui(gcf,'center');
     
-case 4
+case 5
     %% Photometry to Lick
     % lickWithin = 0.25; %CHANGE, lick within this window
     % plotSingleTrial = 1; % CHANGE, if = 0 then will not plot single trial data;
@@ -174,7 +187,7 @@ case 4
     end
     linkaxes(sp,'y');
 
-case 5
+case 6
     %% Plot photometry to peaks of positive acceleration
     % winAcc = [-1 1];
     figure;
@@ -203,7 +216,7 @@ case 5
     linkaxes(sp,'y');
     movegui(gcf,'center');
 
-case 6
+case 7
     %% Plot immobility pause peak
     % NumStd = 2;
     [amp, dur, freq, thres] = getImmPausePeak(beh);
