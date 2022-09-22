@@ -15,7 +15,8 @@ lickWithin = 0.25;      % CHANGE, lick within this window
 winRew = [-1 2];        % CHANGE, window for aligning signal to rewarded trials, in seconds
 winBase = [-4 -1];
 winPkDA = [100 500];    % CHANGE, window for DA peak, in milliseconds
-winTrACh = [200 700];   % CHANGE, window for ACh trough, in milliseconds
+winTrACh = [300 700];   % CHANGE, window for ACh trough, in milliseconds
+xlbl = 'reward';
 winAcc = [-1 1];        % CHANGE, window for aligning signal to acceleration, in seconds
 NumStd = 2;             % CHANGE, for immobility trough/peak analysis
 clr = {'k','r','b','c','m'};
@@ -28,12 +29,25 @@ for z = 1:length(cannula)
     r = cannula(z).win;
     for x = 1:length(beh)
         Fs = beh(x).Fs;
+        if isempty(beh(x).reward) 
+            cannula(z).a_rew{x,1} = nan(151,1);
+            cannula(z).a_rew{x,2} = nan(151,1);
+            continue; end
         rew = beh(x).reward./Fs; % reward delivery times, in seconds
         lick = beh(x).lick./Fs; % lick times, in seconds
         [rewYes, ~, lickNew] = extractRewardedTrials(rew, lick, [0 lickWithin]);
         %rewYes: indices of rewarded trials (animal licked within specified window)
         ev = rew(rewYes); % delivery times for rewarded trials, in seconds
         ev = ev(ev > r(x,1)*60 & ev < r(x,2)*60); % extract rewarded trials during post-infusion window
+        
+%         % % aligning photometry to FIRST lick
+%         bin = 1/1000;
+%         peth = getClusterPETH(lickNew, ev, bin, [0 1]); % PETH: lick aligned to rewarded trials in 1 ms bins
+%         cts = peth.cts{1}; % Lick counts in 1ms bins for each reward trial
+%         [~, lickFirst] = max(cts~=0, [], 1); % Find first non-zero index for each trial
+%         lickFirst = lickFirst(:).*bin + ev(:); % First lick after delivery for rewarded trials
+%         ev = lickFirst; 
+%         xlbl = '1st lick'; winPkDA = [0 400]; winTrACh = [200 600];
         
         for y = 1:length(beh(x).FP)
             sig = beh(x).FP{y}; % signal that will be aligned to event times
@@ -58,11 +72,37 @@ for z = 1:2
         for x = 1:size(a_rew,1)
             a_mat(:,x) = nanmean(a_rew{x,y},2); % extract reward-aligned data from structure and average across all rewards
         end
-        subplot(1,2,y);
-        shadederrbar(time, nanmean(a_mat,2), SEM(a_mat,2), clr{choice(z)}); % plot average across trials
+        subplot(1,2,y); hold on
+        plot(time, a_mat, clr{choice(z)});
+        % shadederrbar(time, nanmean(a_mat,2), SEM(a_mat,2), clr{choice(z)}); % plot average across trials
         ylabel(sprintf('%s amplitude (dF/F)',cannula(1).s(1).FPnames{y}));
-        xlabel('time to reward (s)');
-        title(sprintf('%s (n = %d): %s vs %s',cannula(1).s(1).FPnames{y},size(a_mat,2),cannula(choice(1)).inf,cannula(choice(2)).inf)); axis square
+        xlabel(sprintf('time to %s (s)',xlbl));
+        title(sprintf('%s (n = %d): %s vs %s',...
+            cannula(1).s(1).FPnames{y},...
+            size(a_mat(:,~isnan(a_mat(1,:))),2),...
+            cannula(choice(1)).inf,cannula(choice(2)).inf)); 
+        axis square
+    end
+end
+movegui(gcf,'center');
+
+%% PLOT example reward responses
+x = 4; % example
+if ~isfield(cannula(1),'a_rew')
+    error('No field a_rew - must align photometry to reward delivery before proceeding.');
+end
+fig = figure; fig.Position(3) = 1000;
+for z = 1:2
+    a_rew = cannula(choice(z)).a_rew; % extract reward-aligned data from structure
+    for y = 1:size(a_rew,2)
+        subplot(1,2,y);
+        shadederrbar(time, nanmean(a_rew{x,y},2), SEM(a_rew{x,y},2), clr{choice(z)}); % plot average across trials
+        ylabel(sprintf('%s amplitude (dF/F)',cannula(1).s(1).FPnames{y}));
+        xlabel(sprintf('time to %s (s)',xlbl));
+        title(sprintf('%s (example): %s vs %s',...
+            cannula(1).s(1).FPnames{y},...
+            cannula(choice(1)).inf,cannula(choice(2)).inf)); 
+        axis square
     end
 end
 movegui(gcf,'center');
@@ -88,6 +128,7 @@ for z = 1:2
         val{y}(x,z) = nanmean(a); % save amplitude of minima
         lag{y}(x,z) = nanmean(c).*1000; % save lag at minima, in milliseconds
     end
+    val{y}(val{y} == 0) = nan; lag{y}(lag{y} == 0) = nan;
     
     y = 2; % analyzing DA reward response
     win = winPkDA; % range for ACh trough, in milliseconds
@@ -101,6 +142,7 @@ for z = 1:2
         val{y}(x,z) = nanmean(a); % save amplitude of minima
         lag{y}(x,z) = nanmean(c).*1000; % save lag at minima, in milliseconds
     end
+    val{y}(val{y} == 0) = nan; lag{y}(lag{y} == 0) = nan;
     
     for y = 1:2
         subplot(1,2,y); hold on
@@ -109,17 +151,17 @@ for z = 1:2
         SEM(val{y}(:,z),1), SEM(val{y}(:,z),1), ... % error bars vertical for amplitude
         SEM(lag{y}(:,z),1), SEM(lag{y}(:,z),1), ... % error bars horizontal for latency
         '.', 'MarkerSize', 20, 'Color', clr{choice(z)});
-        xlabel('time to reward (s)'); xlim([win(1) win(2)]);
+        xlabel(sprintf('time to %s (s)',xlbl)); xlim([win(1) win(2)]);
     end
 end
-subplot(1,2,1); % ACh reward response subplot
+y = 1; subplot(1,2,y); % ACh reward response subplot
     xlabel('time to reward (s)'); xlim([winTrACh(1) winTrACh(2)]);
-    ylabel('ACh trough amplitude (%dF/F)'); ylim([-8 0]); yticks([-8:1:0]);
+    ylabel('ACh trough amplitude (%dF/F)'); ylim([-4 0]); yticks([-8:1:0]);
     [~,p] = ttest(lag{y}(:,1),lag{y}(:,2)); % statistical test: paired t-test
     [~,p(2)] = ttest(val{y}(:,1),val{y}(:,2)); % statistical test: paired t-test
     title(sprintf('%s vs %s (lag %1.2f, val %1.2f)',cannula(choice(1)).inf,cannula(choice(2)).inf,p(1),p(2)));
     axis square
-subplot(1,2,2); % DA reward response subplot
+y = 2; subplot(1,2,y); % DA reward response subplot
     xlabel('time to reward (s)'); xlim([winPkDA(1) winPkDA(2)]);
     ylabel('DA peak amplitude (%dF/F)'); ylim([0 10]); yticks([0:1:10]);
     [~,p] = ttest(lag{y}(:,1),lag{y}(:,2)); % statistical test: paired t-test

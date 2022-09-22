@@ -15,17 +15,19 @@
 % Anya Krok, September 2022
 
 %% LOAD RAW SIGNALS INTO WORKSPACE
+window = [20 40]; window = window.*60;
+
 loaded = menu('Already loaded raw data into workspace?','yes','yes but update','no');
 switch loaded
     case 1
         if ~exist('rawS','var') && ~exist('norm','var')
-            [norm, f, flog, p1_mat, rawS] = getCannula_fft();
+            [norm, f, flog, p1_mat, rawS] = getCannula_fft(window);
         end
     case 2
         if ~exist('rawS','var'); error('No variable called rawS exists'); end
-        [norm, f, flog, p1_mat, rawS] = getCannula_fft(rawS);
+        [norm, f, flog, p1_mat, rawS] = getCannula_fft(window, rawS);
     case 3
-        [norm, f, flog, p1_mat, rawS] = getCannula_fft();
+        [norm, f, flog, p1_mat, rawS] = getCannula_fft(window);
 end
 
 %% Subtract stable fluorophore (GFP/tdTomato) signal

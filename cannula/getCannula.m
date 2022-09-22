@@ -2,18 +2,35 @@
 %
 % Anya Krok, September 2022
 %
-%% INPUTS
-infOptions = {'saline','iGluR antag','nAChR antag','mAChR antag','D1/2R antag'};
-infWindow = [20 40]; % window to analyze after infusion, in minutes
-if ~exist('cannula','var'); cannula = struct; end
 
 %% Select .mat files you want to add to summary data structu
 fPath = 'R:\tritsn01labspace\'; 
-[fName,fPath] = uigetfile([fPath,'*.mat'],'MultiSelect','On');
+[fName,fPath] = uigetfile([fPath,'*.mat'],'Select data for analysis','MultiSelect','On');
+if ~iscell(fName); fName = {fName}; end
 fName = sort(fName);
 beh = extractBeh(fPath, fName); % extract data
-inf = menu('Select infusion',infOptions); % select data type
 
-cannula(inf).s = beh; % load into structure
-cannula(inf).inf = infOptions{inf}; % infusion
-cannula(inf).win = infWindow.*ones(length(beh),2); % window to analyze after infusion, in minutes
+%% Organize data into cannula structure
+infWindow = [20 40]; % window to analyze after infusion, in minutes
+infOptions = {'saline','iGluR antag','nAChR antag','mAChR antag','D1/2R antag','D2R agonist'};
+for x = 1:length(beh)
+    choice = menu(sprintf('Select infusion: %s',fName{x}),infOptions); % select data type
+    beh(x).inf = infOptions{choice}; % store infusion label into structure
+end
+uni = unique({beh.inf}); % unique infusions
+uni = fliplr(uni); % flip so that saline is first
+
+cannula = struct; % initialize new structure
+for y = 1:length(uni)
+    cannula(y).s = beh(strcmp({beh.inf},uni{y}));
+    cannula(y).inf = uni{y};
+    cannula(y).win = infWindow.*ones(length(cannula(y).s),2); % window to analyze after infusion, in minutes
+end
+
+%% Save if indicated
+choice = menu('Save cannula structure for future use?','Yes','No');
+switch choice
+    case 1
+        canName = inputdlg('Enter name for file to save cannula structure:','Input',1,{'achda_beh_cannulaDLS_saline+XXinfusion.mat'});
+        save(fullfile(fPath,canName{1}),'cannula');
+end

@@ -1,8 +1,9 @@
-function [corr_achda, lags, shuff_achda] = AK_corrFP(beh)
+function [corr_achda, lags, shuff_achda] = AK_corrFP(beh, varargin)
 %Cross-correlation between ACh and DA photometry signals acquired during
 %dual color photometry recordings
 %
 %   [corr_achda, lags] = AK_corrFP(beh)
+%   [corr_achda, lags] = AK_corrFP(beh, win)
 %   [corr_achda, lags, shuff_achda, min_val, min_lag] = AK_corrFP(beh)
 %
 %   Description: This function is for running cross-correlation analysis on
@@ -13,6 +14,7 @@ function [corr_achda, lags, shuff_achda] = AK_corrFP(beh)
 %   INPUTS
 %   'beh' - structure with photometry and behavioral data for multiple
 %   recordings, should include beh(x).rec as [an,'-',day]
+%   'win'(optional) - window to restrict analysis to, in seconds
 %   
 %   OUTPUTS
 %   'corr_achda' - cross-correlation between ACh and DA signals, normalized
@@ -27,6 +29,7 @@ function [corr_achda, lags, shuff_achda] = AK_corrFP(beh)
 %   Author: Anya Krok, December 2021
 
 %% INPUTS
+if nargin == 2; win = varargin{1}; end % Window for analysis, in seconds
 y = [2 1]; % Photometry signal to use as reference is the one listed first
 % e.g. if y = [1 2] then the signal in beh(x).FP{1} will be used as
 % reference signal, while if y = [2 1] then the signal in beh(x).FP{2} will
@@ -41,6 +44,8 @@ for a = 1:3; for b = 1:4; corr_cell{a,b} = nan(501,length(beh)); end; end % fill
 
 %% RUN ANALYSIS ON ALL RECORDINGS
 h = waitbar(0, 'cross correlation');
+idxStates = extractBehavioralStates(beh);
+nStates = 3;
 for x = 1:length(beh) % iterate over all recordings
     
     %% extract signals
@@ -49,24 +54,27 @@ for x = 1:length(beh) % iterate over all recordings
     fp_mat(:,1) = fp_mat(:,1) - nanmean(fp_mat(:,1)); % subtract baseline (mean of entire photometry signal) from fp
     fp_mat(:,2) = beh(x).FP{y(2)}; % extract photometry signal from structure
     fp_mat(:,2) = fp_mat(:,2) - nanmean(fp_mat(:,2)); % subtract baseline (mean of entire photometry signal) from fp
-
-    %% extract indices for behavioral states
-    if isfield(beh,'reward')
-        idx_rew = extractEventST([1:length(fp_mat)]', floor(beh(x).reward), floor(beh(x).reward)+Fs, 1); % identify sample during reward window: [0 +1]seconds relative to reward delivery for all trials (rewarded or not)
-    else; idx_rew = []; end
-    idx_mov = extractEventST([1:length(fp_mat)]', beh(x).on, beh(x).off, 1); % identify sample during locomotion
-    idx_mov_nonRew = idx_mov(~ismember(idx_mov, idx_rew)); % exclude reward, include locomotion
-    idx_imm = extractEventST([1:length(fp_mat)]', beh(x).onRest, beh(x).offRest, 1); % identify sample during locomotion
-    idx_imm_nonRew = idx_imm(~ismember(idx_imm, idx_rew)); % exclude reward, include rest
-    idx_cell = cell(3,1); idx_cell{1} = idx_imm_nonRew; idx_cell{2} = idx_mov_nonRew; idx_cell{3} = idx_rew; % index into cell array for ease of iteration
+    
+    %% adjust indices to retain if within specified window
+    if nargin == 2
+        for z = 1:nStates
+            idxTmp = idxStates{x,z};
+            idxTmp = idxTmp(idxTmp > win(1)*Fs & idxTmp < win(2)*Fs); % retain only indices that are within specified window
+            if ~isempty(idxTmp)
+                needL = 200.*Fs;
+                if length(idxTmp) < needL % ensure that have at least 200 seconds of signal
+                    idxTmp = repmat(idxTmp, [ceil(needL/length(idxTmp)) 1]); % duplicate indices to lengthen signal for processing
+                end
+            end
+            idxStates{x,z} = idxTmp; % re-insert into output structure
+        end
+    end
     
     %%
-    % mat(x).rec = beh(x).rec;
-    
     fp_sub = [];
-    for z = 1:3
-        if length(idx_cell{z})< 2; continue; end
-        fp_sub = fp_mat(idx_cell{z},:); % signal
+    for z = 1:nStates
+        if length(idxStates{x,z})< 2; continue; end
+        fp_sub = fp_mat(idxStates{x,z},:); % signal
         % fp_sub = normalize(fp_mat,1,'range'); % normalize [0 1]
         % fp_sub = fp_filt(idx_cell{z},:); % bandpass filtered signal
         
@@ -82,9 +90,6 @@ for x = 1:length(beh) % iterate over all recordings
             % tmp_shuff(:,s) = xcorr(fp_sub(:,1), fp_sub(randperm(size(fp_sub,2)),2), 10*Fs, 'coeff');
             tmp_shuff(:,s) = xcorr(fp_sub(:,1), fp_sub_new, 5*Fs, 'coeff');
         end
-        
-        % mat(x).corr{z} = corr_tmp;
-        % mat(x).shuff{z} = prctile(tmp_shuff, [5 50 95], 2);
         corr_cell{z,1}(:,x) = corr_tmp;       % cross-correlation
         corr_cell{z,2}(:,x) = prctile(tmp_shuff, 5, 2); % shuffle 5th percentile
         corr_cell{z,3}(:,x) = prctile(tmp_shuff, 50, 2); % shuffle 50th percentile
@@ -106,9 +111,9 @@ shuff_achda = cell(3,3); % initialize output
 
 for x = 1:nAn
     idx = strcmp(rec,uni{x}); % match animal ID to recordings
-    for z = 1:3 % iterate over behavioral states
+    for z = 1:nStates % iterate over behavioral states
         corr_adj = corr_cell{z,1}; % extract cross-correlation output for this behavioral state
-        corr_adj = corr_adj - nanmean(corr_adj([1:find(lags == -2)],:)); % adjust such that baseline outside of +/- 2s is at zero
+        corr_adj = corr_adj - nanmean(corr_adj(1:find(lags./Fs == -2),:)); % adjust such that baseline outside of +/- 2s is at zero
         corr_achda{z,1}(:,x) = nanmean(corr_adj(:,idx),2); % average across all recordings for this animal
         for b = 2:4 % iterate over shuffle percentiles
             corr_adj = corr_cell{z,b};

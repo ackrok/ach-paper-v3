@@ -1,4 +1,4 @@
-function [norm, f, flog, p1_mat, rawS] = getCannula_fft(varargin)
+function [norm, f, flog, p1_mat, rawS] = getCannula_fft(window, varargin)
 %FFT to analyze the frequency components present in photometry signal for 
 % cannula infusion experiments
 %
@@ -22,14 +22,14 @@ function [norm, f, flog, p1_mat, rawS] = getCannula_fft(varargin)
 
 %% LOAD RAW SIGNALS INTO WORKSPACE
 switch nargin
-    case 1
+    case 2
         rawS = varargin{1};
-        rawS = extractRaw_fft_cannula(rawS);
-    case 0
+        rawS = extractRaw_fft_cannula(window, rawS);
+    case 1
         %% Select .mat files you want to add to summary data structu
         fPath = 'R:\tritsn01labspace\'; 
         [fName,fPath] = uigetfile([fPath,'*.mat'],'MultiSelect','On');
-        rawS = extractRaw_fft_cannula(fPath,fName);
+        rawS = extractRaw_fft_cannula(window, fPath, fName);
 end
 if ~exist('rawS','var'); error('No variable called rawS exists'); end
 
