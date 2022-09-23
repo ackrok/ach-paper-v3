@@ -31,9 +31,6 @@ if any(plotOpt == 1) || any(plotOpt == 2)
             beh = cannula(y).s;
             r = cannula(y).win(1,:).*60; % Post infusion window for analysis, in samples
             Fs = beh(1).Fs;
-            % Before running analyses, need to overwrite event times for
-            % immobility, locomotion, reward to be restricted to post-infusion
-            % window for analysis
             [corr_achda, lags, shuff_achda] = AK_corrFP(beh, r(1,:));
             nAn = length(beh); % number of unique animals
             nStates = length(corr_achda); % number of behavioral states
@@ -134,11 +131,11 @@ else
                 p = [];
                 nComp = length(cannula);
                 for z = 1:nStates
-                    plotme = [cannula(1).corrMinVal(:,z), cannula(2).corrMinVal(:,z)];
+                    plotme = [cannula(1).corrMinVal(:,z), cannula(2).corrMinVal(:,z)]; % Plot maximum coefficient values for each animal
                     hold on
-                    plot(((nComp*z-1)+[0.25;0.75]).*ones(nComp,nAn), plotme', '.-', 'MarkerSize', 20, 'Color', clr{z});
-                    errorbar([z*nComp-1 z*nComp], nanmean(plotme), SEM(plotme,1), '.k', 'MarkerSize', 20);
-                    [~,p(z)] = ttest(plotme(:,1),plotme(:,2));
+                    plot(((nComp*z-1)+[0.25;0.75]).*ones(nComp,nAn), plotme', '.-', 'MarkerSize', 20, 'Color', clr{z}); % Individual data points
+                    errorbar([z*nComp-1 z*nComp], nanmean(plotme), SEM(plotme,1), '.k', 'MarkerSize', 20); % Error bars with SEM
+                    [~,p(z)] = ttest(plotme(:,1),plotme(:,2)); % Paired t-test
                 end
                 ylabel('Pearsons r'); ylim([-1 0]); yticks([-1:0.2:0]);
                 xlim([0.5 0.5+nComp*nStates]); xticks([1:nComp*nStates]);
