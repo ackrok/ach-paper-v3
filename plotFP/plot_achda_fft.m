@@ -45,8 +45,7 @@ switch loaded
         rawS = extractRaw_fft(rawS);
     case 3
         %% Select .mat files you want to add to summary data structu
-        fPath = 'R:\tritsn01labspace\'; 
-        [fName,fPath] = uigetfile([fPath,'*.mat'],'MultiSelect','On');
+        [fName,fPath] = uigetfile('*.mat','MultiSelect','On');
         rawS = extractRaw_fft(fPath,fName);
 end
 if ~exist('rawS','var'); error('No variable called rawS exists'); end

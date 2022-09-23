@@ -15,26 +15,26 @@
 % Anya Krok, September 2022
 
 %% INPUTS
-% window = [20 40]; window = window.*60;
-window = [200 800];
+% winInf = [20 40]; window = window.*60;
+winInf = [200 800];
 
 %% LOAD RAW SIGNALS INTO WORKSPACE
 loaded = menu('Already loaded raw data into workspace?','yes','yes but update','no');
 switch loaded
     case 1
         if ~exist('rawS','var') && ~exist('norm','var')
-            [norm, f, flog, p1_mat, rawS] = getCannula_fft(window);
+            [norm, f, flog, p1_mat, rawS] = getCannula_fft(winInf);
         end
     case 2
         if ~exist('rawS','var'); error('No variable called rawS exists'); end
-        [norm, f, flog, p1_mat, rawS] = getCannula_fft(window, rawS);
+        [norm, f, flog, p1_mat, rawS] = getCannula_fft(winInf, rawS);
     case 3
-        [norm, f, flog, p1_mat, rawS] = getCannula_fft(window);
+        [norm, f, flog, p1_mat, rawS] = getCannula_fft(winInf);
 end
 
 %% Subtract stable fluorophore (GFP/tdTomato) signal
 if ~exist('norm_gfp','var') && ~exist('norm_antd1d2','var')
-    [fName_flu,fPath_flu] = uigetfile(['*.mat'],'Select GFP+tdTomato for FFT file','MultiSelect','Off');
+    [fName_flu,fPath_flu] = uigetfile('*.mat','Select GFP+tdTomato for FFT file');
     load(fullfile(fPath_flu,fName_flu));
 end
 

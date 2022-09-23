@@ -23,50 +23,51 @@
 % Anya Krok, July 2022
 
 %% INPUTS
-% window = [20 40]; window = window.*60;
-window = [200 500];
+% winInf = [20 40]; window = window.*60;
+winInf = [200 1000];
 
 %%
 choice = menu('Raw photometry signal loaded into workspace?',...
     'yes','yes but update','no');
-
 switch choice
     case 3
-        [norm, f, flog, p1_mat, rawS] = getCannula_fft(window);
+        [norm, f, flog, p1_mat, rawS] = getCannula_fft(winInf);
     case 2
-        [norm, f, flog, p1_mat, rawS] = getCannula_fft(window, rawS);
+        [norm, f, flog, p1_mat, rawS] = getCannula_fft(winInf, rawS);
 end
 
-%% INPUTS - MANUAL
-% nComp = 2; % Number of comparisons to be made
-% norm_comp = cell(1,nComp);
-% norm_comp{1} = []; norm_comp{2} = []; % CHANGE
-% lbl_inf = {'DLS','DMS'};
-% lbl_fp = rawS(1).fp_lbl;
-% clr = {'k','m'};
-% nAn = size(norm_comp{2},2);
-
-%% INPUTS
+%% EXTRACT DATA for comparison
 switch choice
     case {2,3}
-        uni = unique({rawS.inf}); uni = fliplr(uni); % Unique infusions
-        nComp = length(uni); % Number of comparisons to be made
+        rec = {}; for x = 1:length(rawS); rec{x} = strtok(rawS(x).rec,'-'); end % Extract mouse names
+        uniAn = unique(rec); % Unique mouse
+        uniInf = unique({rawS.inf}); uniInf = fliplr(uniInf); % Unique infusions
+        nComp = length(uniInf); % Number of comparisons to be made
         norm_comp = cell(1,nComp);
+        idxStore = cell(1,nComp);
         for x = 1:nComp
-            norm_comp{x} = norm(:,strcmp({rawS.inf}, uni{x})); % Extract normalized FFT ouput for matching infusions into single cell array
-        end 
-        lbl_inf = uni;
-        lbl_fp = rawS(1).fp_lbl;
-        nAn = size(norm_comp{1},2);
+            idx = find(strcmp({rawS.inf}, uniInf{x}));
+            norm_comp{x} = norm(:,idx); % Extract normalized FFT ouput for matching infusions into single cell array
+            idxStore{x} = idx;
+        end
+        lbl_inf = uniInf; % Store unique infusion labels
+        lbl_fp = rawS(1).fp_lbl; % Store photometry label
+        nAn = length(uniAn); % Number of unique animals
+        for x = 1:nAn % Check that mouse ID is the same across data in different infusion conditions before proceeding
+            tmpID = cell(1,nComp); for y = 1:nComp; tmpID{y} = rec{idxStore{2}(x)}; end
+            if ~all(strcmp(tmpID, rec{idxStore{1}(x)})) % If all mouse ID do not match ID of this data in first infusion condition
+                error('Data across infusions does not have matching mouse IDs. \n Re-load data, making sure to select data files with matching mouse IDs. \n',x);
+            end
+        end
 end
 
-%% SAVE
+%% (OPTIONAL) SAVE
 %EXAMPLE: save('DataLocation\DataName.mat','norm_comp','f','flog','lbl_inf','lbl_fp');
 % Must save variables: 'norm_comp','f','flog','lbl_inf','lbl_fp'
 
 %% LOAD pre-analyzed signals into workspace
 if ~exist('norm_comp','var')
-    [fName,fPath] = uigetfile('*.mat', 'Select data file that contains norm_comp f flog lbl_inf lbl_fp','MultiSelect','Off');
+    [fName,fPath] = uigetfile('*.mat', 'Select data file that contains norm_comp f flog lbl_inf lbl_fp');
     if ~exist('norm_comp','var')
         error('No variable norm_comp in workspace.');
     end
@@ -74,7 +75,7 @@ end
 
 %% LOAD fluorophore (GFP/tdTomato) signal
 if ~exist('norm_gfp','var') && ~exist('norm_antd1d2','var') && ~exist('norm_tdt','var')
-    [fName_flu,fPath_flu] = uigetfile('*.mat','Select GFP+tdTomato for FFT file','MultiSelect','Off');
+    [fName_flu,fPath_flu] = uigetfile('*.mat','Select GFP+tdTomato for FFT file');
     load(fullfile(fPath_flu,fName_flu));
 end
 % fluorophore = menu('Fluorophore FFT signal to subtract','green','red');
@@ -112,9 +113,9 @@ ds = 50; % Downsample when plotting so figure is smaller in size
 fig = figure; fig.Position(3) = 1375;
 switch lbl_fp
     case 'ACh'; clr = {'k','g','r','m','b','c'}; 
-        clr2 = [0 0 0 0.2; 0.05 0.75 0.45 0.2; 0 0 1 0.2];
-    case 'DA'; clr = {'k','m','r'}; 
-        clr2 = [0 0 0 0.2; 1 0 1 0.2; 0 0 1 0.2];
+        clr2 = [0 0 0 0.2; 0.05 0.75 0.45 0.2; 0 0 1 0.2; 0.05 0.75 0.45 0.2; 0 0 1 0.2];
+    case 'DA'; clr = {'k','m','r','g','b','c'}; 
+        clr2 = [0 0 0 0.2; 1 0 1 0.2; 0 0 1 0.2; 0.05 0.75 0.45 0.2; 0 0 1 0.2];
 end
 subplot(1,3,1); hold on
     for y = 1:length(sub_comp)
