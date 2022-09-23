@@ -4,8 +4,7 @@
 %
 
 %% Select .mat files you want to add to summary data structu
-fPath = 'R:\tritsn01labspace\'; 
-[fName,fPath] = uigetfile([fPath,'*.mat'],'Select data for analysis','MultiSelect','On');
+[fName,fPath] = uigetfile('*.mat','Select data for analysis','MultiSelect','On');
 if ~iscell(fName); fName = {fName}; end
 fName = sort(fName);
 beh = extractBeh(fPath, fName); % extract data
@@ -36,6 +35,10 @@ end
 choice = menu('Save cannula structure for future use?','Yes','No');
 switch choice
     case 1
-        canName = inputdlg('Enter name for file to save cannula structure:','Input',1,{['achda_beh_cannulaDLS_',uni{1},'+',uni{2},'.mat']});
+        if length(uni) > 1
+            canName = inputdlg('Enter name for file to save cannula structure:','Input',1,{['achda_beh_cannulaDLS_',uni{1},'+',uni{2},'.mat']});
+        else
+            canName = inputdlg('Enter name for file to save cannula structure:','Input',1,{['achda_beh_cannulaDLS_',uni{1},'.mat']});
+        end
         save(fullfile(fPath,canName{1}),'cannula');
 end

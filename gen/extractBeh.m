@@ -25,12 +25,10 @@ function beh = extractBeh(varargin)
     %% INPUTS
     switch nargin
         case 0
-            fPath = 'R:\tritsn01labspace\'; 
-            [fName,fPath] = uigetfile([fPath,'*.mat'],'Select data files to add to beh structure','MultiSelect','On');
+            [fName,fPath] = uigetfile('*.mat','Select data files to add to beh structure','MultiSelect','On');
             beh = struct;
         case 1
-            fPath = 'R:\tritsn01labspace\'; 
-            [fName,fPath] = uigetfile([fPath,'*.mat'],'Select data files to add to beh structure','MultiSelect','On');
+            [fName,fPath] = uigetfile('*.mat','Select data files to add to beh structure','MultiSelect','On');
             beh = varargin{1};
         case 2
             fPath = varargin{1};

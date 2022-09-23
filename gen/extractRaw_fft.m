@@ -30,7 +30,7 @@ function [rawS] = extractRaw_fft(varargin)
     %% INPUTS
     switch nargin
         case 0
-            [fName,fPath] = uigetfile(['*.mat'],'MultiSelect','On');
+            [fName,fPath] = uigetfile('*.mat','MultiSelect','On');
             if ~iscell(fName); fName = {fName}; end
         case 2
             fPath = varargin{1};
