@@ -92,8 +92,8 @@ case {3, 4}
 
     figure; 
     switch choice % set subplot # for figure
-        case 2; plm = floor(sqrt(length(beh))); pln = ceil(length(beh)/plm); % if not plotting single trials
-        case 3; plm = 3; pln = length(beh); % if yes plotting single trials
+        case 3; plm = floor(sqrt(length(beh))); pln = ceil(length(beh)/plm); % if not plotting single trials
+        case 4; plm = 3; pln = length(beh); % if yes plotting single trials
     end
     for x = 1:length(beh)
         Fs = beh(x).Fs;
@@ -118,7 +118,7 @@ case {3, 4}
         title(sprintf('%s (%d trials)',beh(x).rec,length(find(rewYes))),'Interpreter','none');
         %title of subplot is <recording name (#rewarded trials)>
 
-        if choice == 3
+        if choice == 4
             for y = 1:length(beh(x).FP)
                 subplot(plm,pln,x+(y*length(beh))); hold on
                 sig = beh(x).FP{y}; % signal that will be aligned to event times
