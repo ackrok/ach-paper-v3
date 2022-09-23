@@ -22,11 +22,14 @@
 %
 % Anya Krok, July 2022
 
+%% INPUTS
+% window = [20 40]; window = window.*60;
+window = [200 500];
+
 %%
 choice = menu('Raw photometry signal loaded into workspace?',...
     'yes','yes but update','no');
-% window = [20 40]; window = window.*60;
-window = [200 500];
+
 switch choice
     case 3
         [norm, f, flog, p1_mat, rawS] = getCannula_fft(window);
