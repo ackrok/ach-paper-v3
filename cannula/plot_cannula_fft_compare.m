@@ -23,7 +23,7 @@
 % Anya Krok, July 2022
 
 %% INPUTS
-winInf = [20 40]; winInf = winInf.*60;
+winInf = [30 50]; winInf = winInf.*60;
 % winInf = [200 1000];
 
 %% (OPTIONAL) SAVE
@@ -139,7 +139,7 @@ subplot(1,3,2); hold on
     ylabel('Power (a.u.)');
     xlabel('Frequency'); xlim([-1 flog(f == 50)]); xticks([-2:2]); xticklabels({'0.01','0.1','1','10','100'});
     title(sprintf('FFT (n = %d): %s', nAn, lbl_fp)); axis square
-    legend({lbl_inf{1},'',lbl_inf{2}});
+    legend(lbl_inf);
 subplot(1,3,3); hold on
     plot(auc', '--.k', 'MarkerSize', 20); 
     errorbar(-0.25+1:size(auc,2),nanmean(auc), SEM(auc,1), '.', 'MarkerSize', 20, 'Color', clr{2});
