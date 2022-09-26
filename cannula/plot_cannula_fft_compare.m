@@ -26,6 +26,10 @@
 winInf = [20 40]; winInf = winInf.*60;
 % winInf = [200 1000];
 
+%% (OPTIONAL) SAVE
+%EXAMPLE: save('DataLocation\DataName.mat','norm_comp','f','flog','lbl_inf','lbl_fp');
+% Must save variables: 'norm_comp','f','flog','lbl_inf','lbl_fp'
+
 %%
 choice = menu('Raw photometry signal loaded into workspace?',...
     'yes','yes but update','no');
@@ -61,10 +65,6 @@ switch choice
         end
 end
 
-%% (OPTIONAL) SAVE
-%EXAMPLE: save('DataLocation\DataName.mat','norm_comp','f','flog','lbl_inf','lbl_fp');
-% Must save variables: 'norm_comp','f','flog','lbl_inf','lbl_fp'
-
 %% LOAD pre-analyzed signals into workspace
 if ~exist('norm_comp','var')
     [fName,fPath] = uigetfile('*.mat', 'Select data file that contains norm_comp f flog lbl_inf lbl_fp');
@@ -81,6 +81,7 @@ end
 % fluorophore = menu('Fluorophore FFT signal to subtract','green','red');
 switch lbl_fp
     case 'ACh'; sub = norm_gfp; % FFT ouput: GFP fluorescence signal, average over n = 3 mice
+    % case 'ACh'; sub = norm_scop; % FFT ouput: ACh fluorescence signal during infusion of mAChR receptor antagonist, average over n = 5 mice    
     % case 'DA'; sub_2 = norm_tdt; % FFT ouput: tdTomato fluorescence signal, average over n = 3 mice
     case 'DA'; sub = norm_antd1d2; % FFT ouput: rDA fluorescence signal during infusion of DA receptor antagonist, average over n = 4 mice
 end
