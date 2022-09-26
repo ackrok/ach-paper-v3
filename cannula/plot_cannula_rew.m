@@ -114,7 +114,6 @@ movegui(gcf,'center');
 if ~isfield(cannula(1),'a_rew')
     error('No field a_rew - must align photometry to reward delivery before proceeding.');
 end
-fig = figure; fig.Position(3) = 1000;
 lag = {}; val = {}; % initialize output
 for z = 1:2
     a_rew = cannula(choice(z)).a_rew; % extract reward-aligned data from structure
@@ -146,15 +145,23 @@ for z = 1:2
         lag{y}(x,z) = nanmean(c).*1000; % save lag at minima, in milliseconds
     end
     val{y}(val{y} == 0) = nan; lag{y}(lag{y} == 0) = nan;
-    
-    for y = 1:2
-        subplot(1,2,y); hold on
+end
+
+%% PLOT AMPLITUDE + LATENCY OF REWARD RESPONSE
+fig = figure; fig.Position(3) = 1000;
+for y = 1:2
+    subplot(1,2,y); hold on
+    for z = 1:2
+        for x = 1:nAn
+            plot(lag{y}(x,:), val{y}(x,:), '-', 'Color', [0 0 0 0.1],'HandleVisibility','off');
+        end
         plot(lag{y}(:,z), val{y}(:,z), '.', 'MarkerSize', 20, 'Color', clr{choice(z)}); % plot individual data points for each mouse
         errorbar(nanmean(lag{y}(:,z)), nanmean(val{y}(:,z)), ... % plot average across all mice
         SEM(val{y}(:,z),1), SEM(val{y}(:,z),1), ... % error bars vertical for amplitude
         SEM(lag{y}(:,z),1), SEM(lag{y}(:,z),1), ... % error bars horizontal for latency
-        '.', 'MarkerSize', 20, 'Color', clr{choice(z)});
+        '.', 'MarkerSize', 20, 'Color', clr{choice(z)},'HandleVisibility','off');
         xlabel(sprintf('time to %s (s)',xlbl)); xlim([win(1) win(2)]);
+        legend({cannula.inf},'Location','southwest');
     end
 end
 y = 1; subplot(1,2,y); % ACh reward response subplot
