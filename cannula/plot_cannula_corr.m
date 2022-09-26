@@ -101,22 +101,22 @@ else
                 fig = figure; hold on; fig.Position([3 4]) = [1375 750];
                 clr = {'r','g','b'};
                 lbl = {'immobility','locomotion','reward'};
-                lags = cannula(1).lags;
+                lags = cannula(1).lags; winCorr = [-1 1];
                 for z = 1:nStates
                     subplot(2,3,z); hold on
                         y = 1; shadederrbar(lags, nanmean(cannula(y).corr{z},2), SEM(cannula(y).corr{z},2), 'k');
                         y = 2; shadederrbar(lags, nanmean(cannula(y).corr{z},2), SEM(cannula(y).corr{z},2), clr{z});
                         plot([0 0],[-1 0.5],'--k');
                         % shadederrbar(lags, nanmean(cannula(1).shuff{z},2), SEM(cannula(1).shuff{z},2), 'k');
-                        xlabel('Lag, DA ref (s)'); xlim(win);
+                        xlabel('Lag, DA ref (s)'); xlim(winCorr);
                         ylabel('Pearsons r'); ylim([-1 0.5]); yticks([-1:0.2:1]);
-                        legend({cannula(1).inf,'',cannula(2).inf},'Location','Southeast');
+                        legend({cannula(1).inf,cannula(2).inf},'Location','Southeast');
                         title(sprintf('Correlation - %s',lbl{z})); axis square
 
                     subplot(2,3,z+3);
                     plotme = [cannula(1).corr{z}, cannula(2).corr{z}]; % concatenate coherence across multiple infusions
-                    plotme = plotme(find(lags == win(1)):find(lags == win(2)),:);
-                    h = imagesc(lags(find(lags == win(1)):find(lags == win(2))), [1:2*nAn], plotme', [-1 1]); % heatmap of single trials
+                    plotme = plotme(find(lags == winCorr(1)):find(lags == winCorr(2)),:);
+                    h = imagesc(lags(find(lags == winCorr(1)):find(lags == winCorr(2))), [1:2*nAn], plotme', [-1 1]); % heatmap of single trials
                     colorbar('off'); colormap(jet(256)); % set color to be jet range
                     xlabel('Lag, DA ref (s)');
                     ylabel('mouse');

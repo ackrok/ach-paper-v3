@@ -59,6 +59,11 @@ for z = 1:length(cannula)
             [matBase] = getSTA(sig, ev, Fs, [winBase(1), winBase(end)]);
             matBase = nanmean(matBase,1); % average across baseline window
             cannula(z).a_rew{x,y} = mat - matBase; % save into structure
+            
+            sig = sig(randperm(length(sig),length(sig))); % random permutation of photometry signal
+            [matShuff] = getSTA(sig, ev, Fs, [winRew(1), winRew(end)]);
+            [matBase] = getSTA(sig, ev, Fs, [winBase(1), winBase(end)]);
+            cannula(z).a_shuff{x,y} = matShuff - matBase; % save into structure
         end
     end
 end
@@ -76,7 +81,7 @@ for z = 1:2
             a_mat(:,x) = nanmean(a_rew{x,y},2); % extract reward-aligned data from structure and average across all rewards
         end
         subplot(1,2,y); hold on
-        plot(time, a_mat, clr{choice(z)});
+        plot(time, a_mat, 'Color', [char2rgb(clr{choice(z)}), 0.2]);
         % shadederrbar(time, nanmean(a_mat,2), SEM(a_mat,2), clr{choice(z)}); % plot average across trials
         ylabel(sprintf('%s amplitude (dF/F)',cannula(1).s(1).FPnames{y}));
         xlabel(sprintf('time to %s (s)',xlbl));
@@ -90,7 +95,7 @@ end
 movegui(gcf,'center');
 
 %% PLOT example reward responses
-x = 4; % example
+x = 5; % example
 if ~isfield(cannula(1),'a_rew')
     error('No field a_rew - must align photometry to reward delivery before proceeding.');
 end
@@ -99,6 +104,10 @@ for z = 1:2
     a_rew = cannula(choice(z)).a_rew; % extract reward-aligned data from structure
     for y = 1:size(a_rew,2)
         subplot(1,2,y);
+        if z == 1 % plot shuffled saline photometry aligned to reward
+            shuff = cannula(z).a_shuff{x,y};
+            shadederrbar(time, nanmean(nanmean(shuff,2)).*ones(length(time),1), nanmean(SEM(shuff,2)).*ones(length(time),1), 'b');
+        end
         shadederrbar(time, nanmean(a_rew{x,y},2), SEM(a_rew{x,y},2), clr{choice(z)}); % plot average across trials
         ylabel(sprintf('%s amplitude (dF/F)',cannula(1).s(1).FPnames{y}));
         xlabel(sprintf('time to %s (s)',xlbl));
@@ -148,7 +157,7 @@ for z = 1:2
 end
 
 %% PLOT AMPLITUDE + LATENCY OF REWARD RESPONSE
-fig = figure; fig.Position(3) = 1000;
+fig = figure; fig.Position(3) = 1375;
 for y = 1:2
     subplot(1,2,y); hold on
     for z = 1:2
@@ -179,3 +188,13 @@ y = 2; subplot(1,2,y); % DA reward response subplot
     title(sprintf('%s vs %s (lag %1.2f, val %1.2f)',cannula(choice(1)).inf,cannula(choice(2)).inf,p(1),p(2)));
     axis square
 movegui(gcf,'center');
+
+% subplot(1,3,3); hold on
+% y = 1;
+% plot(val{y}','.-r', 'MarkerSize', 20);
+% errorbar([0.75 2.25],nanmean(val{y}),SEM(val{y},1),'.k', 'MarkerSize', 20);
+% xlim([0.5 2.5]); xticks([1 2]); xticklabels({cannula.inf});
+% ylim([-4 0]); yticks([-4:0]); ylabel('ACh trough amplitude (%dF/F)');
+% [~,p] = ttest(val{y}(:,1),val{y}(:,2)); % statistical test: paired t-test
+% title(sprintf('%s vs %s (val p = %1.2f)',cannula(choice(1)).inf,cannula(choice(2)).inf,p));
+% axis square
