@@ -1,17 +1,11 @@
 load('C:\Users\Anya\Desktop\FP_LOCAL\fig1\krok_gcamp-DLS-SNc');
 
-%%
-% figure;
-% for x = 1:length(beh)
-%     subplot(3,3,x); hold on
-%     for y = 1:length(beh(x).FP)
-%         plot(beh(x).FP{y});
-%     end
-% end
+%% inputs
+winPlot = [-1 1]; % window for plotting
 
 %% COMPUTE CROSS_CORRELATION
 mat = struct;
-for x = 1:length(beh); y = [2 1]; %CHANGE - which FP signal to run CCG or ACG on
+for x = 1:length(beh); y = [2 1]; %CHANGE - which FP signal to use as reference
     %% extract signals
     Fs = beh(x).Fs; 
     fp_mat = [];
@@ -50,23 +44,36 @@ ii = lags(ii)/Fs*1000; % convert to milliseconds
 %% PLOT
 fig = figure; fig.Position(3) = 1000;
 subplot(1,2,1); hold on
-x = 4; % example recording
+x = 9; % example recording
 plot(lags/Fs, mat(x).c, 'm');
-% shadederrbar(lags/Fs, mat(x).shuff(:,2), mat(x).shuff(:,1), 'k');
+shadederrbar(lags/Fs, mat(x).shuff(:,2), mat(x).shuff(:,1), 'k');
+plot([0 0],[-0.2 1],'--k');
 title('example corr imm DLS/SNc'); axis square
-xlabel('Latency to SNc (s)');
+xlabel('Latency to SNc (s)'); xlim(winPlot); xticks([winPlot(1):0.5:winPlot(2)]);
 ylabel('Coefficient'); ylim([-0.2 1]); yticks([-0.2:0.2:1]);
 
 subplot(1,2,2); hold on
 clr = hsv(nAn);
 for x = 1:nAn
-    plot(ii(x), mm(x), '.', 'MarkerSize', 20, 'Color', clr(x,:)); % plot individual data points
+    plot(ii(x)/1000, mm(x), '.', 'MarkerSize', 20, 'Color', clr(x,:)); % plot individual data points
 end
 plot([0 0],[0 1],'--k'); % vertical line at lag = 0
-errorbar(nanmean(ii), nanmean(mm), SEM(mm,2), '.k', 'MarkerSize', 20); % error bar with SEM
+errorbar(nanmean(ii)/1000, nanmean(mm), ...
+    SEM(mm,2), SEM(mm,2), ...
+    SEM(ii,2)/1000, SEM(ii,2)/1000,...
+    '.k', 'MarkerSize', 20); % error bar with SEM
 title(sprintf('Peak: %1.2f +/- %1.2f || Lag: %1.2f +/- %1.2f ms', nanmean(mm), nanstd(mm), nanmean(ii), nanstd(ii))); 
-xlabel('Latency to SNc (ms)'); xlim([-400 400]); xticks([-500:100:500]);
+xlabel('Latency to SNc (s)'); xlim(winPlot); xticks([winPlot(1):0.5:winPlot(2)]);
 ylabel('Coefficient'); ylim([0 1]); yticks([0:0.2:1]);
 legend(uni);
 axis square
 movegui(gcf,'center');
+
+%% TESTING EXAMPLE
+figure;
+for x = 1:length(mat)
+    subplot(3,4,x); hold on
+    plot([0 0],[-0.2 1],'--k'); plot([-1 1],[0 0],'--k');
+    plot(lags/Fs, mat(x).c); xlim([-1 1]); ylim([-0.2 1]);
+    title(sprintf('%d: r = %1.2f',x,max(mat(x).c)));
+end

@@ -21,11 +21,11 @@ function idxStates = extractBehavioralStates(beh)
         end
         if isfield(beh,'reward')
             if ~isempty(beh(x).reward)
-                idxRew = extractEventST([1:nSamp]', floor(beh(x).reward), floor(beh(x).reward)+Fs, 1); % identify sample during reward window: [0 +1]seconds relative to reward delivery for all trials (rewarded or not)
+                idxRew = extractEventST([1:nSamp]', floor(beh(x).reward), floor(beh(x).reward)+(2*Fs), 1); % identify sample during reward window: [0 +1]seconds relative to reward delivery for all trials (rewarded or not)
                 idxMov = idxMov(~ismember(idxMov, idxRew)); % exclude all reward windows from locomotion
                 idxImm = idxImm(~ismember(idxImm, idxRew)); % exclude all reward windows from immobility
                 rewYes = extractRewardedTrials(beh(x).reward./Fs, beh(x).lick./Fs); % identify rewarded trials
-                idxRew = extractEventST([1:nSamp]', floor(beh(x).reward(rewYes)), floor(beh(x).reward(rewYes))+Fs, 1); % identify sample during reward window for only rewarded trials
+                idxRew = extractEventST([1:nSamp]', floor(beh(x).reward(rewYes))-Fs, floor(beh(x).reward(rewYes))+(2*Fs), 1); % identify sample during reward window for only rewarded trials
             end
         end
         idxStates{x,1} = idxImm; % load into output structure

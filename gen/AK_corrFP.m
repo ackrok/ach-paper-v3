@@ -36,11 +36,12 @@ y = [2 1]; % Photometry signal to use as reference is the one listed first
 % be used as reference signal instead
 % Default from Krok 2022 is to use y = [2 1] so that rDA1m photometry
 % signal is the reference signal
+winCorr = 5; % Window, in seconds, to run cross-correlation on
 
 %% OUTPUTS
 % mat = struct; % temporary output structure
 corr_cell = cell(3,4); % temporary output cell array
-for a = 1:3; for b = 1:4; corr_cell{a,b} = nan(501,length(beh)); end; end % fill cell array with nan's
+for a = 1:3; for b = 1:4; corr_cell{a,b} = nan((winCorr*2*50)+1,length(beh)); end; end % fill cell array with nan's
 
 %% RUN ANALYSIS ON ALL RECORDINGS
 h = waitbar(0, 'cross correlation');
@@ -80,7 +81,7 @@ for x = 1:length(beh) % iterate over all recordings
         
         % [xcf, lags, bounds] = crosscorr(fp_sub(:,1), fp_sub(:,2),'NumLags',100,'NumSTD',3);
         % [shuff,~,~] = crosscorr(fp_sub(randperm(size(fp_sub,1)),1), fp_sub(randperm(size(fp_sub,2)),2),'NumLags',100,'NumSTD',3);
-        [corr_tmp, lags] = xcorr(fp_sub(:,1), fp_sub(:,2), 5*Fs, 'coeff'); % cross-correlation
+        [corr_tmp, lags] = xcorr(fp_sub(:,1), fp_sub(:,2), winCorr*Fs, 'coeff'); % cross-correlation
         
         fp_sub_new = fp_sub(:,2);
         tmp_shuff = []; 
@@ -88,7 +89,7 @@ for x = 1:length(beh) % iterate over all recordings
             fp_sub_new = circshift(fp_sub_new, Fs);
             % tmp_shuff(:,s) = xcorr(fp_sub(randperm(size(fp_sub,1)),1), fp_sub(randperm(size(fp_sub,2)),2), 10*Fs, 'coeff');
             % tmp_shuff(:,s) = xcorr(fp_sub(:,1), fp_sub(randperm(size(fp_sub,2)),2), 10*Fs, 'coeff');
-            tmp_shuff(:,s) = xcorr(fp_sub(:,1), fp_sub_new, 5*Fs, 'coeff');
+            tmp_shuff(:,s) = xcorr(fp_sub(:,1), fp_sub_new, winCorr*Fs, 'coeff');
         end
         corr_cell{z,1}(:,x) = corr_tmp;       % cross-correlation
         corr_cell{z,2}(:,x) = prctile(tmp_shuff, 5, 2); % shuffle 5th percentile

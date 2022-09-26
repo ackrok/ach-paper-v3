@@ -23,8 +23,8 @@
 % Anya Krok, July 2022
 
 %% INPUTS
-% winInf = [20 40]; window = window.*60;
-winInf = [200 1000];
+winInf = [20 40]; winInf = winInf.*60;
+% winInf = [200 1000];
 
 %%
 choice = menu('Raw photometry signal loaded into workspace?',...
