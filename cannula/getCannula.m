@@ -4,7 +4,7 @@
 %
 
 %% Select .mat files you want to add to summary data structu
-[fName,fPath] = uigetfile('*.mat','Select data for analysis','MultiSelect','On');
+[fName,fPath] = uigetfile('*.mat','Select data files (multiple infusions) to add to cannula structure','MultiSelect','On');
 if ~iscell(fName); fName = {fName}; end
 fName = sort(fName);
 beh = extractBeh(fPath, fName); % extract data
