@@ -1,12 +1,15 @@
-loaded = menu('Already loaded cannula into workspace?','yes','no');
-switch loaded
+choice = menu('Cannula structure loaded into workspace?',...
+    'YES','No, but will select from pre-saved cannula file','No, will load from raw data files');
+switch choice
     case 2
         fPath = 'R:\tritsn01labspace\'; 
-        [fName,fPath] = uigetfile([fPath,'*.mat']); % Select .mat files you want to load
+        [fName,fPath] = uigetfile([fPath,'*.mat'],'Select cannula file');
         load(fullfile(fPath,fName));
+    case 3
+        getCannula;
 end
 if ~exist('cannula','var')
-    getCannula
+    error('No cannula variable present in workspace');
 end
 
 %% INPUTS

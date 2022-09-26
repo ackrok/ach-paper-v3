@@ -1,5 +1,5 @@
 choice = menu('Cannula structure loaded into workspace?',...
-    'YES','No, but will select from pre-saved data file','No, will load from raw data');
+    'YES','No, but will select from pre-saved cannula file','No, will load from raw data files');
 switch choice
     case 2
         fPath = 'R:\tritsn01labspace\'; 
