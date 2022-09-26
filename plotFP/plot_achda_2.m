@@ -35,7 +35,8 @@ else
                 % PLOT CROSS-CORRELATION
                 subplot(1,3,1); hold on; 
                     plot([0 0],[-1 0.5],'--k');
-                    shadederrbar(lags/Fs, nanmean(shuff_achda{1,2},2), nanmean(shuff_achda{1,1},2), 'k'); hold on
+                    shadederrbar(lags/Fs, nanmean(shuff_achda{1,2},2) - nanmean(nanmean(shuff_achda{1,2},2)),...
+                        nanmean(shuff_achda{1,1},2), 'k'); hold on
                     for z = 1:nStates
                         shadederrbar(lags/Fs, nanmean(corr_achda{z,1},2), SEM(corr_achda{z,1},2), clr{z});
                     end

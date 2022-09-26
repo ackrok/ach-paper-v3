@@ -15,8 +15,8 @@
 % Anya Krok, September 2022
 
 %% INPUTS
-% winInf = [20 40]; window = window.*60;
-winInf = [200 800];
+winInf = [20 40]; winInf = winInf.*60;
+% winInf = [200 800];
 
 %% LOAD RAW SIGNALS INTO WORKSPACE
 loaded = menu('Already loaded raw data into workspace?','yes','yes but update','no');
@@ -67,7 +67,7 @@ subplot(1,3,1); hold on
     xlabel('Frequency'); ylabel('Power (a.u.)');
     xlim([-1 flog(f == 50)]); xticks([-2:2]); xticklabels({'0.01','0.1','1','10','100'});
     legend({rawS.rec});
-    title(sprintf('%s FFT %s || win [%d %d]s',rawS(1).fp_lbl,rawS(1).behState,window(1),window(2))); axis square
+    title(sprintf('%s FFT %s || win [%d %d]s',rawS(1).fp_lbl,rawS(1).behState,winInf(1),winInf(2))); axis square
 subplot(1,3,2); hold on
     shadederrbar(flog(1:ds:end), nanmean(sub_mat((1:ds:end),:),2), SEM(sub_mat((1:ds:end),:),2), 'r'); % Plot FFT averaged across all recordings
     plot([-2 2],[0 0],'-','Color',[0 0 0 0.3]); % Line at 0 power
