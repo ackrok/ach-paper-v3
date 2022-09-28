@@ -91,6 +91,12 @@ function beh = extractBeh(varargin)
             beh(x).reward = data.final.rew.onset;    % Reward delivery time in sampling freq (data.gen.Fs), NOT in seconds
             beh(x).lick = data.final.lick.onset;     % Lick times in sampling freq (data.gen.Fs), NOT in seconds
         end
+        
+        %% CAMERA
+        if isfield(data.acq,'cam')
+            beh(x).task = 'openField';
+            beh(x).cam = data.final.cam.on;     % Camera trigger times in sampling freq (data.gen.Fs), NOT in seconds
+        end
 
         %%
         fprintf('Extracted from %s\n',fName{f});

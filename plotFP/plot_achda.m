@@ -67,7 +67,7 @@ case 1
         ylabel('%dF/F')
         title(sprintf('%s',beh(x).rec));
     end
-    subplot(length(beh),1,1); legend({beh(x).FPnames{y}, 'acc'});
+    subplot(length(beh),1,1); legend(beh(x).FPnames);
     subplot(length(beh),1,length(beh)); xlabel('Time (s)'); 
     movegui(gcf,'center');
     
