@@ -23,7 +23,7 @@
 % Anya Krok, July 2022
 
 %% INPUTS
-winInf = [20 40]; winInf = winInf.*60;
+winInf = [10 30]; winInf = winInf.*60;
 % winInf = [200 1000];
 
 %% (OPTIONAL) SAVE
