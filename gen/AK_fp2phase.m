@@ -1,8 +1,8 @@
-function [fp2ph, fp2ph_norm, da2achph_norm, mid] = AK_fp2phase(beh)
+function [fp2ph, fp2ph_norm, da2achph_norm, mid, da2achph] = AK_fp2phase(beh)
 %Distribution of signal fluorescence to the instantaneous phase of a
 %second photometry signal, acquired using dual color fiber photometry
 %
-%   [fp2ph, fp2ph_norm, da2achph_norm, mid] = AK_fp2phase(beh)
+%   [fp2ph, fp2ph_norm, da2achph_norm, mid, da2achph] = AK_fp2phase(beh)
 %
 %   Description: This function is for computing the distribution of
 %   photometry signal to instantaneous phase of the same or another

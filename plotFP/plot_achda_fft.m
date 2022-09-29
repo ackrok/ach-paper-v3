@@ -60,7 +60,8 @@ r = [find(f == range_norm(1)):find(f == range_norm(2))]; % Restrict to [0.01 100
 flog = log10(f(r)); % Log-scale frequency vector
 for x = 1:size(p1_mat,2)
     a = log10(p1_mat(r,x));
-    vec_norm = (a - a(end))./(a(1) - a(end)); 
+    a_end = nanmean(log10(p1_mat(find(f == 40):find(f == 50),x)));
+    vec_norm = (a - a_end)./(a(1) - a_end); 
     % vec_norm = normalize(log10(p1_mat(r,x)),'range'); % Normalize range from [0.01 100], scaling so range covers [0 1]
     tmpNorm(:,x) = vec_norm;
 end
@@ -76,8 +77,9 @@ end
 sub_1 = [norm]; % SUBTRACT
 switch rawS(1).fp_lbl
     case 'ACh'; sub_2 = norm_gfp; % FFT ouput: GFP fluorescence signal, average over n = 3 mice
-    % case 'DA'; sub_2 = norm_tdt; % FFT ouput: tdTomato fluorescence signal, average over n = 3 mice
-    case 'DA'; sub_2 = norm_antd1d2; % FFT ouput: rDA fluorescence signal during infusion of DA receptor antagonist, average over n = 4 mice
+    % case 'ACh'; sub_2 = norm_scop(1:length(flog)); % FFT ouput: ACh fluorescence signal during infusion of mAChR receptor antagonist, average over n = 5 mice    
+    case 'DA'; sub_2 = norm_tdt; % FFT ouput: tdTomato fluorescence signal, average over n = 3 mice
+%     case 'DA'; sub_2 = norm_daAnt; % FFT ouput: rDA fluorescence signal during infusion of DA receptor antagonist, average over n = 4 mice
 end
 sub_mat = []; for x = 1:size(sub_1,2); sub_mat(:,x) = sub_1(:,x) - nanmean(sub_2,2); end % Subtract avg FFT for mAChR antagonist
 

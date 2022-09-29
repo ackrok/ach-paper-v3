@@ -43,7 +43,8 @@ r = [find(f == range_norm(1)):find(f == range_norm(2))]; % Restrict to [0.01 100
 flog = log10(f(r)); % Log-scale frequency vector
 for x = 1:size(p1_mat,2)
     a = log10(p1_mat(r,x));
-    vec_norm = (a - a(end))./(a(1) - a(end)); 
+    a_end = nanmean(log10(p1_mat(find(f == 40):find(f == 50),x)));
+    vec_norm = (a - a_end)./(a(1) - a_end); 
     % vec_norm = normalize(log10(p1_mat(r,x)),'range'); % Normalize range from [0.01 100], scaling so range covers [0 1]
     tmpNorm(:,x) = vec_norm;
 end

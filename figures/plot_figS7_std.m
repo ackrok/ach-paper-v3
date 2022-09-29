@@ -1,15 +1,14 @@
 load('C:\Users\Anya\Desktop\FP_LOCAL\fig1\krok_fig1_beh.mat')
 
 %% Extract standard deviation
+idxStates = extractBehavioralStates(beh); % identify indices pertaining to different behavioral states
 sig = cell(1,2);
 for x = 1:length(beh)
     fp = [beh(x).FP{1}, beh(x).FP{2}]; % extract photometry signal
     fp = fp - nanmean(fp);
-    idx_imm = extractEventST([1:size(fp,1)]', beh(x).onRest, beh(x).offRest, 1); % index of samples during immobility
-    idx_mov = extractEventST([1:size(fp,1)]', beh(x).on, beh(x).off, 1); % index of samples during locomotion
     for y = 1:2
-        sig{y}(x,1) = nanstd(fp(idx_imm,y)); % standard deviation of photometry signal during immobility
-        sig{y}(x,2) = nanstd(fp(idx_mov,y)); % standard deviation of photometry signal during locomotion
+        sig{y}(x,1) = nanstd(fp(idxStates{x,1},y)); % standard deviation of photometry signal during immobility
+        sig{y}(x,2) = nanstd(fp(idxStates{x,2},y)); % standard deviation of photometry signal during locomotion
     end
 end
 rec = {}; for x = 1:length(beh); rec{x} = strtok(beh(x).rec,'-'); end
