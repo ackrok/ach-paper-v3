@@ -95,7 +95,7 @@ end
 movegui(gcf,'center');
 
 %% PLOT example reward responses
-x = 5; % example
+x = 4; % example
 if ~isfield(cannula(1),'a_rew')
     error('No field a_rew - must align photometry to reward delivery before proceeding.');
 end
@@ -111,8 +111,9 @@ for z = 1:2
         shadederrbar(time, nanmean(a_rew{x,y},2), SEM(a_rew{x,y},2), clr{choice(z)}); % plot average across trials
         ylabel(sprintf('%s amplitude (dF/F)',cannula(1).s(1).FPnames{y}));
         xlabel(sprintf('time to %s (s)',xlbl));
-        title(sprintf('%s (example): %s vs %s',...
+        title(sprintf('%s (%s): %s vs %s',...
             cannula(1).s(1).FPnames{y},...
+            strtok(cannula(1).s(x).rec,'-'),...
             cannula(choice(1)).inf,cannula(choice(2)).inf)); 
         axis square
     end
@@ -157,7 +158,7 @@ for z = 1:2
 end
 
 %% PLOT AMPLITUDE + LATENCY OF REWARD RESPONSE
-fig = figure; fig.Position(3) = 1375;
+fig = figure; fig.Position(3) = 1000;
 for y = 1:2
     subplot(1,2,y); hold on
     for z = 1:2
@@ -182,7 +183,7 @@ y = 1; subplot(1,2,y); % ACh reward response subplot
     axis square
 y = 2; subplot(1,2,y); % DA reward response subplot
     xlabel('time to reward (s)'); xlim([winPkDA(1) winPkDA(2)]);
-    ylabel('DA peak amplitude (%dF/F)'); ylim([0 10]); yticks([0:1:10]);
+    ylabel('DA peak amplitude (%dF/F)'); ylim([0 15]);
     [~,p] = ttest(lag{y}(:,1),lag{y}(:,2)); % statistical test: paired t-test
     [~,p(2)] = ttest(val{y}(:,1),val{y}(:,2)); % statistical test: paired t-test
     title(sprintf('%s vs %s (lag %1.2f, val %1.2f)',cannula(choice(1)).inf,cannula(choice(2)).inf,p(1),p(2)));

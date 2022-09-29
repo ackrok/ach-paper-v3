@@ -10,7 +10,7 @@ fName = sort(fName);
 beh = extractBeh(fPath, fName); % extract data
 
 %% Organize data into cannula structure
-infWindow = [30 50]; % window to analyze after infusion, in minutes
+infWindow = [10 40]; % window to analyze after infusion, in minutes
 infOptions = {'saline','iGluR-antag','nAChR-antag','mAChR-antag','D1/2R-antag','D2R-ago','muscimol','other'};
 for x = 1:length(beh)
     choice = menu(sprintf('Select infusion: %s',fName{x}),infOptions); % select data type
