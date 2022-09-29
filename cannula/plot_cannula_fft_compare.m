@@ -23,7 +23,7 @@
 % Anya Krok, July 2022
 
 %% INPUTS
-winInf = [30 50]; winInf = winInf.*60;
+winInf = [20 40]; winInf = winInf.*60;
 % winInf = [200 1000];
 
 %% (OPTIONAL) SAVE
@@ -82,8 +82,8 @@ end
 switch lbl_fp
     case 'ACh'; sub = norm_gfp; % FFT ouput: GFP fluorescence signal, average over n = 3 mice
     % case 'ACh'; sub = norm_scop; % FFT ouput: ACh fluorescence signal during infusion of mAChR receptor antagonist, average over n = 5 mice    
-    % case 'DA'; sub_2 = norm_tdt; % FFT ouput: tdTomato fluorescence signal, average over n = 3 mice
-    case 'DA'; sub = norm_antd1d2; % FFT ouput: rDA fluorescence signal during infusion of DA receptor antagonist, average over n = 4 mice
+    case 'DA'; sub = norm_tdt; % FFT ouput: tdTomato fluorescence signal, average over n = 3 mice
+%     case 'DA'; sub = norm_daAnt; % FFT ouput: rDA fluorescence signal during infusion of DA receptor antagonist, average over n = 4 mice
 end
 %% SUBTRACT stable fluorophore (GFP/tdTomato) signal
 sub_comp = cell(1,length(norm_comp));

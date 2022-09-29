@@ -15,8 +15,9 @@
 % Anya Krok, September 2022
 
 %% INPUTS
-winInf = [20 40]; winInf = winInf.*60;
+% winInf = [20 40]; winInf = winInf.*60;
 % winInf = [200 800];
+winInf = [30 50]; winInf = winInf.*60;
 
 %% LOAD RAW SIGNALS INTO WORKSPACE
 loaded = menu('Already loaded raw data into workspace?','yes','yes but update','no');
@@ -42,7 +43,7 @@ sub_1 = [norm]; % SUBTRACT
 switch rawS(1).fp_lbl
     case 'ACh'; sub_2 = norm_gfp; % FFT ouput: GFP fluorescence signal, average over n = 3 mice
     % case 'DA'; sub_2 = norm_tdt; % FFT ouput: tdTomato fluorescence signal, average over n = 3 mice
-    case 'DA'; sub_2 = norm_antd1d2; % FFT ouput: rDA fluorescence signal during infusion of DA receptor antagonist, average over n = 4 mice
+    case 'DA'; sub_2 = norm_daAnt; % FFT ouput: rDA fluorescence signal during infusion of DA receptor antagonist, average over n = 4 mice
 end
 sub_mat = []; for x = 1:size(sub_1,2); sub_mat(:,x) = sub_1(:,x) - nanmean(sub_2,2); end % Subtract avg FFT for mAChR antagonist
 

@@ -1,4 +1,12 @@
 function idxStates = extractBehavioralStates(beh)
+%Extract behavioral states using data in beh structure. 
+%
+% First column contains indices of samples during immobility, excluding 
+%   reward if present.
+% Second column contains indices of samples during locomotion, also
+%   excluding reward if present.
+% Third column contains indices of samples during reward delivery period,
+%   for rewarded trials, if reward delivery occured.
 %
 % idxStates = extractBehavioralStates(beh)
 %
