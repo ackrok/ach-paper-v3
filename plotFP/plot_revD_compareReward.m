@@ -51,8 +51,8 @@ lag = []; val = []; % initialize output
 y = 1; % analyzing ACh reward response
 r = [200 700]; % range for ACh trough, in milliseconds
 r = (r/(1000/Fs) + find(time == 0)); 
-for z = 1:2
-    for x = 1:4
+for z = 1:length(compare)
+    for x = 1:nAn
         pull = compare(z).a_rew{x,y}; % extract matrix of reward-aligned signals
         pull = pull(r(1):r(2),:); % extract only segment of time specified as window for reward-related trough
         [a,b] = min(pull); % find local minima within range
@@ -66,7 +66,7 @@ end
 %% PLOT AMPLITUDE/LATENCY of ACh reward response
 figure; hold on
 clr = {'k','g'};
-for z = 1:2
+for z = 1:length(compare)
     plot(lag(:,z), val(:,z), '.', 'MarkerSize', 20, 'Color', clr{z});
     errorbar(nanmean(lag(:,z)), nanmean(val(:,z)), ... 
     SEM(val(:,z),1), SEM(val(:,z),1), ... 
