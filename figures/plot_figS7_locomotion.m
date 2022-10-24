@@ -68,7 +68,7 @@ subplot(1,3,1); hold on
     plot(stdFP{y}', '.-', 'Color', [0 0 0 0.1], 'MarkerSize', 20);
     errorbar([0.75 2.25], nanmean(stdFP{y}), SEM(stdFP{y},1), '.g', 'MarkerSize', 20);
     xticks([1 2]); xticklabels({'immobility','locomotion'}); 
-    ylabel('Standard deviation'); ylim([0 7]);
+    ylabel('Standard deviation'); ylim([0 6]);
     [~,p] = ttest(stdFP{y}(:,1),stdFP{y}(:,2));
     title(sprintf('STD ACh: p = %1.4f',p));
     axis square; set(gca,'TickDir','out');

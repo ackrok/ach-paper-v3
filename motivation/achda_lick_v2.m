@@ -1,5 +1,5 @@
-good_rew = [10:16,20,22:26,28:29,32:35,40:42,44:46];
-beh = modAChDA(good_rew);
+% good_rew = [10:16,20,22:26,28:29,32:35,40:42,44:46];
+% beh = modAChDA(good_rew);
 
 %% Extract data and process lick and reward trials
 out = struct;
@@ -50,6 +50,7 @@ rew = beh(x).reward(:)/beh(x).Fs; % Extract reward delivery times, adjusting eve
     tmp = nan(length(out(x).delivery),1); % Initialize output vector
     tmp(out(x).rew_yes) = out(x).rew_lick;
     out(x).rew_lick = tmp; % Include NaNs for non-rewarded trials
+    
 end
 fprintf('Done re-processing lick and reward trials. Window: %d to %1.2f seconds \n',window(1),window(2));
 
