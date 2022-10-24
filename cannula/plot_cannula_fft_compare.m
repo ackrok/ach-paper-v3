@@ -23,12 +23,12 @@
 % Anya Krok, July 2022
 
 %% INPUTS
-winInf = [10 30]; winInf = winInf.*60;
+winInf = [20 30]; winInf = winInf.*60;
 % winInf = [200 1000];
 
 %% (OPTIONAL) SAVE
-%EXAMPLE: save('DataLocation\DataName.mat','norm_comp','f','flog','lbl_inf','lbl_fp');
-% Must save variables: 'norm_comp','f','flog','lbl_inf','lbl_fp'
+%EXAMPLE: save('DataLocation\DataName.mat','norm_comp','f','flog','lbl_inf','lbl_fp','winInf');
+% Must save variables: 'norm_comp','f','flog','lbl_inf','lbl_fp','winInf'
 
 %%
 choice = menu('Raw photometry signal loaded into workspace?',...
@@ -80,10 +80,10 @@ if ~exist('norm_gfp','var') && ~exist('norm_antd1d2','var') && ~exist('norm_tdt'
 end
 % fluorophore = menu('Fluorophore FFT signal to subtract','green','red');
 switch lbl_fp
-    case 'ACh'; sub = norm_gfp; % FFT ouput: GFP fluorescence signal, average over n = 3 mice
-    % case 'ACh'; sub = norm_scop; % FFT ouput: ACh fluorescence signal during infusion of mAChR receptor antagonist, average over n = 5 mice    
-    case 'DA'; sub = norm_tdt; % FFT ouput: tdTomato fluorescence signal, average over n = 3 mice
-%     case 'DA'; sub = norm_daAnt; % FFT ouput: rDA fluorescence signal during infusion of DA receptor antagonist, average over n = 4 mice
+    % case 'ACh'; sub = norm_gfp; % FFT ouput: GFP fluorescence signal, average over n = 3 mice
+    case 'ACh'; sub = norm_achAnt; % FFT ouput: ACh fluorescence signal during infusion of mAChR receptor antagonist, average over n = 5 mice    
+    % case 'DA'; sub = norm_tdt; % FFT ouput: tdTomato fluorescence signal, average over n = 3 mice
+    case 'DA'; sub = norm_daAnt; % FFT ouput: rDA fluorescence signal during infusion of DA receptor antagonist, average over n = 4 mice
 end
 %% SUBTRACT stable fluorophore (GFP/tdTomato) signal
 sub_comp = cell(1,length(norm_comp));

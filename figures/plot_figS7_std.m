@@ -30,7 +30,7 @@ for y = 1:2
     plot(sig_an{y}', '.-', 'Color', [0 0 0 0.1], 'MarkerSize', 20);
     errorbar([0.75 2.25], nanmean(sig_an{y}), SEM(sig_an{y},1), '.', 'MarkerSize', 20, 'Color', clr{y});
     xticks([1 2]); xticklabels({'imm','loc'}); 
-    ylabel('standard deviation'); ylim([0 7]);
+    ylabel('standard deviation'); ylim([0 6]);
     [~,p] = ttest(sig_an{y}(:,1),sig_an{y}(:,2));
     title(sprintf('%s STD (p = %1.4f) n = %d',lbl{y},p,nAn)); axis square
 end
