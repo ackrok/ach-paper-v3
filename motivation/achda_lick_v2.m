@@ -51,6 +51,12 @@ rew = beh(x).reward(:)/beh(x).Fs; % Extract reward delivery times, adjusting eve
     tmp(out(x).rew_yes) = out(x).rew_lick;
     out(x).rew_lick = tmp; % Include NaNs for non-rewarded trials
     
+%% Number of licks per reward period (0:2s)
+    peth = getClusterPETH(lick, ev, 2, [0 2]); % PETH: lick aligned to rewarded trials
+    cts = peth.cts{1}(:); % Lick counts for each reward trial across 2 second period post-delivery
+    out(x).lick_num = nan(length(out(x).delivery),1);
+    out(x).lick_num(out(x).rew_yes) = cts;
+    
 end
 fprintf('Done re-processing lick and reward trials. Window: %d to %1.2f seconds \n',window(1),window(2));
 

@@ -95,7 +95,7 @@ end
 movegui(gcf,'center');
 
 %% PLOT example reward responses
-x = 2; % example
+x = 5; % example
 if ~isfield(cannula(1),'a_rew')
     error('No field a_rew - must align photometry to reward delivery before proceeding.');
 end

@@ -37,18 +37,23 @@ function [amp, dur, freq, thres] = getImmPausePeak(beh, varargin)
 %   Author: Anya Krok, August 2022
 
     %% Initialize inputs
+    thres = [];
     switch nargin
         case 1
             NumStd = 2; % default is 2
         case 2
-            NumStd = varargin{1};
+            ii = varargin{1};
+            if length(varargin{1}) > 1
+                thres = ii; NumStd = 2;
+            elseif length(varargin{1}) == 1
+                NumStd = ii;
+            end
     end
     
     %% Initialize outputs
     amp = nan(length(beh),2); % 1st column will contain amplitudes of troughs, 2nd column will contain amplitudes of peaks
     dur = nan(length(beh),2); 
     freq = nan(length(beh),2); 
-    thres = nan(length(beh),1);
 
     %% Analyze
     for x = 1:length(beh) % iterate over recordings
@@ -86,7 +91,9 @@ function [amp, dur, freq, thres] = getImmPausePeak(beh, varargin)
 
         %Find the index of peaks that are more than NumStd standard deviations (NumStd could be 1.5 standard deviations)
         % finds the 0 degree phase indices that cross 1.5 standard deviations. Might have to remove the ; depending on whether your data is a row or column array
-        thres(x) = NumStd*stdsig;
+        if length(varargin{1}) == 1
+            thres(x) = NumStd*stdsig;
+        end
         idxPeak = find(data_filt>thres(x) & [0; diff(data_phase>0)]); 
         idxPause = find(-data_filt>thres(x) & [0; diff(-data_phase>0)]); 
     %         figure; hold on

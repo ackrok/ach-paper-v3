@@ -19,7 +19,7 @@ beh = modAChDA(good_rew);
 mat = struct;
 corr_cell = cell(3,2);
 for a = 1:3; for b = 1:2; corr_cell{a,b} = nan(501,length(beh)); end; end
-corr_shuff = corr_cell;
+corr_shuff = cell(3,3);
 
 h = waitbar(0, 'cross corr');
 for x = 1:length(beh); y = [2 1]; %CHANGE - which FP signal to run CCG or ACG on
@@ -76,18 +76,28 @@ for x = 1:length(beh); y = [2 1]; %CHANGE - which FP signal to run CCG or ACG on
             mat(x).corr{z} = corr_tmp;
             corr_cell{z,seg}(:,x) = corr_tmp;       % cross-correlation
         end
+        fp_sub = [fp_mat(idx_cell{z,1},:); fp_mat(idx_cell{z,2},:)];
+        fp_sub_new = fp_sub(:,2);
+        tmp_shuff = []; 
+        for s = 1:50
+            fp_sub_new = circshift(fp_sub_new, Fs);
+            tmp_shuff(:,s) = xcorr(fp_sub(:,1), fp_sub_new, 5*Fs, 'coeff');
+        end
+        corr_shuff{1,z}(:,x) = prctile(tmp_shuff, 5, 2); % shuffle 5th percentile
+        corr_shuff{2,z}(:,x) = prctile(tmp_shuff, 50, 2); % shuffle 50th percentile
+        corr_shuff{3,z}(:,x) = prctile(tmp_shuff, 95, 2); % shuffle 95th percentile
     end
     %% Shuffled cross-correlation
-    fp_sub_new = fp_mat(:,2);
-    tmp_shuff = []; 
-    for s = 1:50
-        fp_sub_new = circshift(fp_sub_new, Fs);
-        tmp_shuff(:,s) = xcorr(fp_mat(:,1), fp_sub_new, 5*Fs, 'coeff');
-    end
-    mat(x).shuff = prctile(tmp_shuff, [5 50 95], 2);
-    corr_shuff{1,1}(:,x) = prctile(tmp_shuff, 5, 2); % shuffle 5th percentile
-    corr_shuff{2,1}(:,x) = prctile(tmp_shuff, 50, 2); % shuffle 50th percentile
-    corr_shuff{3,1}(:,x) = prctile(tmp_shuff, 95, 2); % shuffle 95th percentile
+%     fp_sub_new = fp_mat(:,2);
+%     tmp_shuff = []; 
+%     for s = 1:50
+%         fp_sub_new = circshift(fp_sub_new, Fs);
+%         tmp_shuff(:,s) = xcorr(fp_mat(:,1), fp_sub_new, 5*Fs, 'coeff');
+%     end
+%     mat(x).shuff = prctile(tmp_shuff, [5 50 95], 2);
+%     corr_shuff{1,1}(:,x) = prctile(tmp_shuff, 5, 2); % shuffle 5th percentile
+%     corr_shuff{2,1}(:,x) = prctile(tmp_shuff, 50, 2); % shuffle 50th percentile
+%     corr_shuff{3,1}(:,x) = prctile(tmp_shuff, 95, 2); % shuffle 95th percentile
         
 %%
     waitbar(x/length(beh),h);
@@ -106,7 +116,7 @@ for x = 1:nAn
     for a = 1:3
         for b = 1:2
             corr_adj = corr_cell{a,b};
-            corr_adj = corr_adj - nanmean(corr_adj([1:find(lags == -2)],:));
+            corr_adj = corr_adj - nanmean(corr_adj([find(lags./Fs == -3):find(lags./Fs == -1)],:));
             corr_an{a,b}(:,x) = nanmean(corr_adj(:,idx),2);
         end
         corr_adj = corr_shuff{a,1};

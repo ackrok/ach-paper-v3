@@ -4,18 +4,19 @@ clr = {'r','k';'g','k';'b','k'};
 lbl = {'immobility','locomotion','reward'};
 for y = 1:3
     subplot(1,3,y); hold on
-    plot([0 0],[-1 0.5],'--k');
-    % a = nanmean(corr_shuff_an{2},2);
-    % a = a - nanmean(a(find(lags/Fs == -5):find(lags/Fs == -1),:));
-    % shadederrbar(lags/Fs, a, nanmean(corr_shuff_an{3}-corr_shuff_an{2},2), 'k'); hold on % SHUFFLE
     for z = 1:2
-        a = corr_an{y,z}; a = a - nanmean(a(find(lags/Fs == -5):find(lags/Fs == -1),:));
+        a = corr_an{y,z}; a = a - nanmean(a(find(lags./Fs == -2):find(lags./Fs == -0.5),:));
         shadederrbar(lags/Fs, nanmean(a,2), SEM(corr_an{y,z},2), clr{y,z}); % EARLY 
     end
-    
+    plot([0 0],[-1 0.5],'--k');
+    a = nanmean(corr_shuff{2,y},2); b = nanmean(corr_shuff{3,y},2);
+    a = a - nanmean(a(find(lags./Fs == -2):find(lags./Fs == -1),:));
+    shadederrbar(lags/Fs, a, b, 'k'); hold on % SHUFFLE
     xlabel('Lag (s)'); xlim([-0.5 0.5]);
     ylabel('Correlation Coefficient'); ylim([-1 0.5]); yticks([-1:0.25:1]);
-    title(sprintf('%s (n = %d mice)',lbl{y}, nAn)); axis('square');
+    title(sprintf('%s (n = %d mice)',lbl{y}, nAn));
+    axis square; set(gca,'TickDir','out');
+    legend({'early','late','shuff'});
 end
 movegui(gcf,'center');
 
