@@ -216,7 +216,7 @@ else
                 movegui(gcf,'center');
                 
             case 6
-                %% PLOT coherence statistics
+                %% PLOT phase statistics
                 fig = figure; hold on; fig.Position(3) = 1000;
                 clr = {'r','g','b'};
                 p = [];

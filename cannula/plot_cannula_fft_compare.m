@@ -23,7 +23,7 @@
 % Anya Krok, July 2022
 
 %% INPUTS
-winInf = [20 30]; winInf = winInf.*60;
+winInf = [10 20]; winInf = winInf.*60;
 % winInf = [200 1000];
 
 %% (OPTIONAL) SAVE
@@ -80,8 +80,8 @@ if ~exist('norm_gfp','var') && ~exist('norm_antd1d2','var') && ~exist('norm_tdt'
 end
 % fluorophore = menu('Fluorophore FFT signal to subtract','green','red');
 switch lbl_fp
-    % case 'ACh'; sub = norm_gfp; % FFT ouput: GFP fluorescence signal, average over n = 3 mice
-    case 'ACh'; sub = norm_achAnt; % FFT ouput: ACh fluorescence signal during infusion of mAChR receptor antagonist, average over n = 5 mice    
+    case 'ACh'; sub = norm_gfp; % FFT ouput: GFP fluorescence signal, average over n = 3 mice
+    % case 'ACh'; sub = norm_achAnt; % FFT ouput: ACh fluorescence signal during infusion of mAChR receptor antagonist, average over n = 5 mice    
     % case 'DA'; sub = norm_tdt; % FFT ouput: tdTomato fluorescence signal, average over n = 3 mice
     case 'DA'; sub = norm_daAnt; % FFT ouput: rDA fluorescence signal during infusion of DA receptor antagonist, average over n = 4 mice
 end
@@ -127,7 +127,7 @@ subplot(1,3,1); hold on
     plot([flog(f == range_auc(2)) flog(f == range_auc(2))],[-0.1 0.4],'-','Color',[0 0 0 0.3]); % Line at 4 Hz 
     ylabel('Power (a.u.)');
     xlabel('Frequency'); xlim([-1 flog(f == 50)]); xticks([-2:2]); xticklabels({'0.01','0.1','1','10','100'});
-    title(sprintf('FFT %s', lbl_fp)); axis square
+    title(sprintf('FFT %s [%d %d]min', lbl_fp, winInf(1)/60, winInf(2)/60)); axis square
 subplot(1,3,2); hold on
     for y = 1:length(sub_comp)
         plotme = sub_comp{y}((1:ds:end),:);
