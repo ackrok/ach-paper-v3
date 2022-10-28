@@ -17,10 +17,10 @@
 %% INPUTS
 nComp = 2; % Number of comparisons to be made
 norm_comp = cell(1,nComp);
-norm_comp{1} = [norm_da_female, norm_da_female1]; % CHANGE
-norm_comp{2} = [norm_da_male, norm_da_male1]; % CHANGE
-lgd = {'DA female','DA male'}; % CHANGE
-clr = {'k','m'};
+norm_comp{1} = [norm(:,[1:4])]; % CHANGE
+norm_comp{2} = [norm(:,[5:8])]; % CHANGE
+lgd = {'pre','lesion'}; % CHANGE
+clr = {'k','g'};
 nAn = size(norm_comp{2},2);
 
 %% LOAD pre-analyzed signals into workspace
@@ -39,7 +39,7 @@ fluorophore = menu(sprintf('Fluorophore FFT signal to use for: %s, %s',lgd{1},lg
 switch fluorophore
     case 1; sub = norm_gfp; % FFT ouput: GFP fluorescence signal, average over n = 3 mice
     % case 2; sub_2 = norm_tdt; % FFT ouput: tdTomato fluorescence signal, average over n = 3 mice
-    case 2; sub = norm_antd1d2; % FFT ouput: rDA fluorescence signal during infusion of DA receptor antagonist, average over n = 4 mice
+    case 2; sub = norm_daAnt; % FFT ouput: rDA fluorescence signal during infusion of DA receptor antagonist, average over n = 4 mice
 end
 %% SUBTRACT stable fluorophore (GFP/tdTomato) signal
 sub_comp = cell(1,nComp);
@@ -87,6 +87,6 @@ subplot(1,2,2); hold on
     end
     errorbar([0.75 2.25],nanmean(a,2), SEM(a,2), '.', 'MarkerSize', 20, 'Color', clr{2});
     xlim([0.5 2.5]); xticks([1 2]); xticklabels(lgd);
-    ylabel('Power (a.u.)'); ylim([0 0.5]); yticks([0:0.1:0.5]);
+    ylabel('Power (a.u.)'); %ylim([0 0.5]); yticks([0:0.1:0.5]);
     title(sprintf('AUC p = %1.2f',p)); axis square
 movegui(gcf,'center');

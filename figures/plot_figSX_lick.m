@@ -4,7 +4,7 @@ load('C:\Users\Anya\Desktop\FP_LOCAL\fig1\krok_fig1_reward_beh.mat')
 lickWithin = 1; % lick within this window
 winRew = [-1 2]; % window for aligning signal to rewarded trials
 winBase = [-4 -1]; % window for baseline
-staRec = cell(4,2); % initialize output
+staRec = cell(5,2); % initialize output
 
 for x = 1:length(beh)
     Fs = beh(x).Fs;
@@ -24,9 +24,10 @@ for x = 1:length(beh)
     lickNonRew = lickNew(~ismember(lickNew, lickRew)); % Exclude rewarded licks
     
     %%
-    ev = cell(4,1);
+    ev = cell(5,1);
     ev{1} = rew(rewYes); ev{2} = rew(rewNo); 
     ev{3} = lickFirst; ev{4} = lickNonRew;
+    ev{5} = randi(length(beh(x).FP{1}),length(rew),1);
     
     %% aligning photometry
     for y = 1:length(beh(x).FP)
@@ -46,7 +47,7 @@ staAn = cell(4,2);
 for x = 1:nAn
     ii = find(strcmp(rec,uni{x}));
     for y = 1:2
-        for z = 1:length(ev)
+        for z = 1:4
             staAn{z,y}(:,x) = nanmean(staRec{z,y}(:,ii),2); % average across multiple recordings from same mouse
         end
     end
@@ -58,12 +59,14 @@ fig = figure; fig.Position([3 4]) = [1000 800];
 clr = {'g','m'};
 fig_lbl = {'rewarded trials (lick within 1s)','non-rewarded trials (no lick within 1s)','1st rewarded lick','non-rewarded licks'};
 x_lbl = {'reward','reward','lick','lick'};
-for z = 1:length(ev)
+for z = 1:4
     sp(z) = subplot(2,2,z); hold on
     for y = 1:2
         shadederrbar(time, nanmean(staRec{z,y},2), SEM(staRec{z,y},2), clr{y}); % plot average across trials
     end
-    plot([0 0],[-5 10],'--','Color',[0 0 0 0.2]);
+    y = 1; mm = abs(nanmean(SEM(staRec{5,y},2))) + abs(nanmean(nanmean(staRec{5,y},2)));
+    shadederrbar(time, zeros(length(time),1), mm.*ones(length(time),1), 'k'); 
+    plot([0 0],[-5 10],'-','Color',[0 0 0 0.8]);
     xlabel(sprintf('time to %s (s)',x_lbl{z})); xticks([-1:0.5:2]);
     ylabel('FP (%dF/F)');
     title(sprintf('%s ',fig_lbl{z}));
