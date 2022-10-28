@@ -23,7 +23,7 @@
 % Anya Krok, July 2022
 
 %% INPUTS
-winInf = [10 20]; winInf = winInf.*60;
+winInf = [20 40]; winInf = winInf.*60;
 % winInf = [200 1000];
 
 %% (OPTIONAL) SAVE
@@ -98,7 +98,7 @@ nComp = length(sub_comp);
 
 %% AUC in specified frequency band
 range_auc = [0.5 4]; % Range for calculation of area under the curve, in Hz
-auc = nan(nAn, nComp);
+auc = nan(size(sub_comp{1},2), length(sub_comp));
 f_sub = 10.^(flog); % Regenerate frequency vector from log(freq)
 r_auc = [find(f_sub == range_auc(1)):find(f_sub == range_auc(2))]; % extract AUC from [0.5 4] Hz
 for y = 1:length(sub_comp)
