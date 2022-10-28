@@ -25,7 +25,7 @@ choice = menu('Raw photometry signal loaded into workspace?',...
     'yes','no');
 switch choice
     case 2
-        rawS = extractRaw_fft; for x = 1:length(raw1); raw1(x).inf = 'pre'; end
+        raw1 = extractRaw_fft; for x = 1:length(raw1); raw1(x).inf = 'pre'; end
         raw2 = extractRaw_fft; for x = 1:length(raw2); raw2(x).inf = 'lesion'; end
         rawS = [raw1, raw2];
         [p1_mat, f] = getFft(rawS);
