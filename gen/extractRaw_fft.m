@@ -163,5 +163,5 @@ function [rawS] = extractRaw_fft(varargin)
             end
     end
     rawS(rmv == 1) = []; % remove recordings where no fp_sub extracted
-    
+    fprintf('DONE! \n');
 end

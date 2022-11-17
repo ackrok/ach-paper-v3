@@ -33,26 +33,38 @@ fprintf('Cross-correlation GCaMP6f DLS/SNc DONE!\n');
 rec = {}; for x = 1:length(beh); rec{x} = strtok(beh(x).rec,'-'); end
 uni = unique(rec); nAn = length(uni);
 mat_corr = []; % initialize output
+mat_shuff5 = []; mat_shuff50 = [];
 for x = 1:nAn
     idx = find(strcmp(rec,uni{x})); % identify all recordings from this animal
     [~,idx2] = max(max([mat(idx).c])); % maximum amongst corr for all recordings
     mat_corr(:,x) = [mat(idx(idx2)).c]; % extract recording with highest correlation
+    mat_corr(:,x) = mat_corr(:,x) - nanmean(mat_corr(find([lags/Fs] == -2):find([lags/Fs] == -1),x));
+    mat_shuff5(:,x) = mat(idx(idx2)).shuff(:,1);
+    mat_shuff50(:,x) = mat(idx(idx2)).shuff(:,2);
 end
 [mm, ii] = max(mat_corr); % peak correlation coefficient
 ii = lags(ii)/Fs*1000; % convert to milliseconds
 
 %% PLOT
-fig = figure; fig.Position(3) = 1000;
-subplot(1,2,1); hold on
+fig = figure; fig.Position(3) = 1375;
+subplot(1,3,1); hold on
 x = 9; % example recording
 plot(lags/Fs, mat(x).c, 'm');
 shadederrbar(lags/Fs, mat(x).shuff(:,2), mat(x).shuff(:,1), 'k');
 plot([0 0],[-0.2 1],'--k');
 title('example corr imm DLS/SNc'); axis square
 xlabel('Latency to SNc (s)'); xlim(winPlot); xticks([winPlot(1):0.5:winPlot(2)]);
-ylabel('Coefficient'); ylim([-0.2 1]); yticks([-0.2:0.2:1]);
+ylabel('Coefficient'); ylim([-0.2 0.6]); yticks([-0.2:0.2:1]);
 
-subplot(1,2,2); hold on
+subplot(1,3,2); hold on
+shadederrbar(lags/Fs, nanmean(mat_corr,2), SEM(mat_corr,2), 'm');
+shadederrbar(lags/Fs, nanmean(mat_shuff50,2), nanmean(mat_shuff5,2), 'k');
+plot([0 0],[-0.2 1],'--k');
+title('average corr imm DLS/SNc'); axis square
+xlabel('Latency to SNc (s)'); xlim(winPlot); xticks([winPlot(1):0.5:winPlot(2)]);
+ylabel('Coefficient'); ylim([-0.2 0.6]); yticks([-0.2:0.2:1]);
+
+subplot(1,3,3); hold on
 clr = hsv(nAn);
 for x = 1:nAn
     plot(ii(x)/1000, mm(x), '.', 'MarkerSize', 20, 'Color', clr(x,:)); % plot individual data points
@@ -77,3 +89,21 @@ for x = 1:length(mat)
     plot(lags/Fs, mat(x).c); xlim([-1 1]); ylim([-0.2 1]);
     title(sprintf('%d: r = %1.2f',x,max(mat(x).c)));
 end
+
+%% PLOT TRACE
+x = 3;
+
+figure;
+sp(1) = subplot(3,1,1); 
+plot(beh(x).time, beh(x).FP{1}, 'b'); 
+title(sprintf('%s - %s',beh(x).rec,beh(x).FPnames{1}));
+% ylim([-5 20]);
+sp(2) = subplot(3,1,2);
+plot(beh(x).time, beh(x).FP{2}, 'm'); 
+title(sprintf('%s - %s',beh(x).rec,beh(x).FPnames{2}));
+% ylim([-5 60]);
+sp(3) = subplot(3,1,3);
+plot(beh(x).time, getAcc(beh(x).vel), 'k');
+ylim([-1 1]);
+linkaxes(sp,'x');
+% xlim([4.5 14.5]);
