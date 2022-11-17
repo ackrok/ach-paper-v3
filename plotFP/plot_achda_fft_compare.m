@@ -54,7 +54,7 @@ range_auc = [0.5 4]; % Range for calculation of area under the curve, in Hz
 auc_comp = cell(1,2);
 f_sub = 10.^(flog); % Regenerate frequency vector from log(freq)
 r_auc = [find(f_sub == range_auc(1)):find(f_sub == range_auc(2))]; % extract AUC from [0.5 4] Hz
-for y = 1:nComp
+for y = 1:length(sub_comp)
     for x = 1:size(sub_comp{y},2)
         auc_comp{y}(x) = trapz(sub_comp{y}(r_auc,x))/length(r_auc);
     end
@@ -64,7 +64,7 @@ end
 ds = 50; % Downsample when plotting so figure is smaller in size
 fig = figure; fig.Position(3) = 1000;
 subplot(1,2,1); hold on
-    for y = 1:nComp
+    for y = 1:length(sub_comp)
         plotme = sub_comp{y}((1:ds:end),:);
         shadederrbar(flog(1:ds:end), nanmean(plotme,2), SEM(plotme,2), clr{y}); % Plot FFT averaged across all recordings
     end
