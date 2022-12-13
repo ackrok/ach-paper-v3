@@ -39,6 +39,7 @@ for y = 1:length(compare)
     compare(y).lbl1 = {'trough','peak'};
     compare(y).lbl2 = {'frequency','duration','amplitude'};
 end
+fprintf('Done. \n'); 
 
 %%
 fig = figure; fig.Position([3 4]) = [1375 800];

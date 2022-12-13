@@ -22,6 +22,7 @@ for z = 1:2 % plot troughs and peaks
         mat = plotme{y};
         mat = abs(mat);
         mat(isnan(mat)) = 0;
+        mat(4,:) = nan;
         % mat = mat./nanmean(mat(:,1));
         [~,p] = ttest(mat(:,1),mat(:,2));
         
