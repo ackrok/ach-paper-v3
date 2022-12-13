@@ -2,11 +2,19 @@
 % Comparing immobility ACh pause peak statistics
 % for 2 different sets of recordings
 
+<<<<<<< Updated upstream
 beh1 = extractBeh; % Load PREVIOUS reward recordings
 beh2 = extractBeh; % Load NEW reward recordings
 compare = struct;
 compare(1).s = beh1; compare(1).lbl = 'pre';
 compare(2).s = beh2; compare(1).lbl = 'post';
+=======
+% beh1 = extractBeh; % Load PREVIOUS reward recordings
+% beh2 = extractBeh; % Load NEW reward recordings
+% compare = struct;
+% compare(1).s = beh1; compare(1).lbl = 'pre';
+% compare(2).s = beh2; compare(2).lbl = 'post';
+>>>>>>> Stashed changes
 
 %% INPUTS
 nAn = length(compare(1).s);
@@ -46,6 +54,7 @@ for y = 1:length(compare)
         end
     end
 end
+fprintf('Done. \n'); 
 
 lims1 = [0 1; 0 400; 0 6];
 ticks1 = {[0:0.5:1], [0:100:500], [0:2:6]};

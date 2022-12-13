@@ -24,9 +24,8 @@ for y = 1:length(cannula)
         fpMat = [beh(x).FP{1}, beh(x).FP{2}];
         fpMat = fpMat - nanmean(fpMat); % subtract mean of recording to center around 0%
         Fs = beh(x).Fs;
-        
-        winInf = [cannula(y).win(x,1).*(Fs*60), cannula(y).win(x,2).*(Fs*60)]'; % infusion window
         idxImm = idxStates{x,1}; % extract samples during immobility, excluding reward and locomotion
+        winInf = [cannula(y).win(x,1).*(Fs*60), cannula(y).win(x,2).*(Fs*60)]'; % infusion window
         idxImmInf = idxImm(idxImm > winInf(1) & idxImm < winInf(2)); % immobility during infusion window
 
         %% Bandpass filter
@@ -70,7 +69,7 @@ for y = 1:length(cannula)
             b = find(a < 0, 1, 'first') - 1; 
             if ~isempty(b); a = a(1:b); end % retain only values above 0
             c = []; [~,c(1)] = min(abs(a-halfMax)); c(1) = c(1)-1; % idx at half max
-            if idxPeak(z)+win > length(dataFilt)
+            if idxPeak(z)+win >= length(dataFilt)
                 a = [dataFilt(idxPeak(z) : end)]; 
             else
                 a = [dataFilt(idxPeak(z) : idxPeak(z)+win)]; % segment following idx of maximum deflection
@@ -83,7 +82,7 @@ for y = 1:length(cannula)
         end % width at half max for peaks
         for z = 1:length(idxTrgh)
             halfMax = 0.5*dataFilt(idxTrgh(z)); % amplitude at half-max
-            if idxTrgh(z)-win < 0
+            if idxTrgh(z)-win <= 0
                 a = [dataFilt(1 : idxTrgh(z))]; a = flipud(a); % if peak is close to start of recording
             else
                 a = [dataFilt(idxTrgh(z)-win : idxTrgh(z))]; a = flipud(a); % segment preceding idx of maximum deflection
