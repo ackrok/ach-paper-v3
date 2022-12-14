@@ -50,7 +50,8 @@ for y = 1:length(cannula)
         %Find the index of peaks that are more than NumStd standard deviations (NumStd could be 1.5 standard deviations)
         % finds the 0 degree phase indices that cross 1.5 standard deviations. Might have to remove the ; depending on whether your data is a row or column array
 %         NumStd = 1.5;
-        if y == 1; params(x) = NumStd*stdsig; end % Use threshold for saline infusion, which should be in cannula(1)
+        % if y == 1; params(x) = NumStd*stdsig; end % Use threshold for saline infusion, which should be in cannula(1)
+        params(x) = NumStd*stdsig;
         idxPeak = find(dataFilt>(params(x)) & [0; diff(dataPhase>0)]); 
         idxTrgh = find(-dataFilt>(params(x)) & [0; diff(-dataPhase>0)]); 
 %         figure; hold on

@@ -1,6 +1,4 @@
-%%
-% cannula = getImmTroughPeak(cannula);
-load('C:\Users\Anya\Desktop\FP_LOCAL\fig1\krok_figS4_d1d2ImmTrPk.mat');
+load('C:\Users\Anya\Desktop\FP_LOCAL\fig1\krok_figSX_musc_AChimmTrPk_data.mat');
 
 %% PLOT
 if length(cannula) > 2
@@ -22,6 +20,7 @@ for z = 1:2 % plot troughs and peaks
         mat = plotme{y};
         mat = abs(mat);
         mat(isnan(mat)) = 0;
+        mat(4,:) = nan;
         % mat = mat./nanmean(mat(:,1));
         [~,p] = ttest(mat(:,1),mat(:,2));
         
