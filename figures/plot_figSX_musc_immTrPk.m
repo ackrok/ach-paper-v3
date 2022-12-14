@@ -1,6 +1,4 @@
-%%
-% cannula = getImmTroughPeak(cannula);
-load('C:\Users\Anya\Desktop\FP_LOCAL\fig1\krok_figS4_d1d2ImmTrPk.mat');
+load('C:\Users\Anya\Desktop\FP_LOCAL\fig1\krok_figSX_musc_AChimmTrPk_data.mat');
 
 %% PLOT
 if length(cannula) > 2
