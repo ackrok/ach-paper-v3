@@ -1,13 +1,13 @@
-load('C:\Users\Anya\Desktop\FP_LOCAL\fig1\krok_figOF_corr.mat');
-load('C:\Users\Anya\Desktop\FP_LOCAL\fig1\krok_figOF_coher.mat');
-load('C:\Users\Anya\Desktop\FP_LOCAL\fig1\krok_figOF_fp2ph.mat');
+load('C:\Users\Anya\Desktop\FP_LOCAL\fig1\krok_figOF_corr2.mat');
+load('C:\Users\Anya\Desktop\FP_LOCAL\fig1\krok_figOF_coher2.mat');
+load('C:\Users\Anya\Desktop\FP_LOCAL\fig1\krok_figOF_fp2ph2.mat');
 
 % load('C:\Users\Anya\Desktop\FP_LOCAL\openField\beh_OF_SummaryNov22.mat');
 % plot_achda_2
 % uni = {'AK231','AK232','AK233','AK237'};
-% save('C:\Users\Anya\Desktop\FP_LOCAL\fig1\krok_figOF_corr.mat','lags','corr_achda','shuff_achda','uni');
-% save('C:\Users\Anya\Desktop\FP_LOCAL\fig1\krok_figOF_coher.mat','f','t','coher_achda','coher_shuff','phase_achda','phase_shuff','uni');
-% save('C:\Users\Anya\Desktop\FP_LOCAL\fig1\krok_figOF_fp2ph.mat','mid','fp2ph','fp2ph_norm','da2achph_norm','uni');
+% save('C:\Users\Anya\Desktop\FP_LOCAL\fig1\krok_figOF_corr2.mat','lags','corr_achda','shuff_achda','uni');
+% save('C:\Users\Anya\Desktop\FP_LOCAL\fig1\krok_figOF_coher2.mat','f','t','coher_achda','coher_shuff','phase_achda','phase_shuff','uni');
+% save('C:\Users\Anya\Desktop\FP_LOCAL\fig1\krok_figOF_fp2ph2.mat','mid','fp2ph','fp2ph_norm','da2achph_norm','uni');
 
 %% CROSS_CORRELATION
 fig = figure; fig.Position(3) = 1375;
@@ -45,7 +45,7 @@ subplot(1,3,2); hold on;
     xlim([0.5 2.5]); xticks([1:2]); xticklabels({'imm','mov'}); 
     ylabel('coefficient'); ylim([-1 0]); yticks([-1:0.2:1]);
     [~,p] = ttest(plotme(:,1),plotme(:,2));
-    title(sprintf('coeff: ttest p = %1.2f',p));
+    title(sprintf('coeff: ttest p = %1.3f',p));
     axis square
 % PLOT STATISTICS - LATENCY    
 subplot(1,3,3); hold on;
@@ -56,7 +56,7 @@ subplot(1,3,3); hold on;
     xlim([0.5 2.5]); xticks([1:2]); xticklabels({'imm','mov'}); 
     ylabel('lag (ms)'); ylim([-250 0]); yticks([-250:50:0]);
     [~,p] = ttest(plotme(:,1),plotme(:,2));
-    title(sprintf('lag: ttest p = %1.2f',p));
+    title(sprintf('lag: ttest p = %1.3f',p));
     axis square
 movegui(gcf,'center');
 

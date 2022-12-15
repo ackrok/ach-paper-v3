@@ -8,20 +8,15 @@ mov = zeros(length(beh(x).time),1); res = zeros(length(beh(x).time),1);
 for y = 1:length(beh(x).on); mov(beh(x).on(y):beh(x).off(y)) = 1; end
 for y = 1:length(beh(x).onRest); res(beh(x).onRest(y):beh(x).offRest(y)) = 1; end
 figure; hold on
-area(beh(x).time, mov, 'FaceColor', 'g', 'FaceAlpha', 0.2, 'EdgeAlpha', 0.1);
-area(beh(x).time, res, 'FaceColor', 'r', 'FaceAlpha', 0.2, 'EdgeAlpha', 0.1);
+area(mov, 'FaceColor', 'g', 'FaceAlpha', 0.2, 'EdgeAlpha', 0.1);
+area(res, 'FaceColor', 'r', 'FaceAlpha', 0.2, 'EdgeAlpha', 0.1);
 
 %% Refine mov/imm to be >4s long
-thres = 4; % Remove bouts that are less than X seconds long
+thres = 4; % remove 
 for x = 1:length(beh)
     Fs = beh(x).Fs;
     len = (beh(x).off - beh(x).on)./Fs; % Length of bouts, in seconds
-    rmv = find(len < thres); % Index of bouts that are less than X seconds long
-    beh(x).on(rmv) = []; beh(x).off(rmv) = []; % Remove short bouts
-    len = (beh(x).offRest - beh(x).onRest)./Fs; % Length of bouts, in seconds
-    rmv = find(len < thres); % Index of bouts that are less than X seconds long
-    beh(x).onRest(rmv) = []; beh(x).offRest(rmv) = []; % Remove short bouts
-end
+    rmv = find(len < 4); % Index of bouts that are less than 4 seconds long
 
 %% AK231 232 233 234 236
 sigEdge = 15; % Photometry analysis removes first and last 15s of recording
