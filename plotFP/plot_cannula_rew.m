@@ -38,6 +38,7 @@ for z = 1:length(cannula)
             cannula(z).a_rew{x,y} = mat; % save into structure
             
             sp(x) = subplot(plm,pln,x+(y*nAn)); hold on
+            sp(x) = subplot(plm,pln,x+((y-1)*nAn)); hold on
             shadederrbar(time, nanmean(mat,2), SEM(mat,2), clr{z}); % plot average across trials
             ylabel(sprintf('%s (%dF/F)',beh(x).FPnames{y}));
             xlabel('latency to reward (s)');
@@ -55,6 +56,9 @@ r = (r/(1000/Fs) + find(time == 0));
 for z = 1:2
     for x = 1:4
         pull = cannula(z).a_rew{x,y}; % extract matrix of reward-aligned signals during post-infusion window into workspace
+for z = 1:length(compare)
+    for x = 1:size(compare(z).a_rew,1)
+        pull = compare(z).a_rew{x,y}; % extract matrix of reward-aligned signals during post-infusion window into workspace
         pull = pull(r(1):r(2),:); % extract only segment of time specified as window for reward-related trough
         [a,b] = min(pull); % find local minima within range
         c = time(b + r(1) - 1); % convert index to seconds
