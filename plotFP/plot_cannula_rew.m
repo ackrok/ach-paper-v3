@@ -1,15 +1,13 @@
-%% LOAD DATA
-% Comparing reward responses for 2 different sets of recordings by plotting
-% ACh signal to reward overlay
-
-beh1 = extractBeh; % Load PREVIOUS reward recordings
-beh2 = extractBeh; % Load NEW reward recordings
-compare = struct;
-compare(1).s = beh1; compare(1).lbl = 'pre';
-compare(2).s = beh2; compare(1).lbl = 'post';
+loaded = menu('Already loaded cannula into workspace?','yes','no');
+switch loaded
+    case 2
+        fPath = 'R:\tritsn01labspace\'; 
+        [fName,fPath] = uigetfile([fPath,'*.mat']); % Select .mat files you want to load
+        load(fullfile(fPath,fName));
+end
 
 %% INPUTS
-nAn = length(compare(1).s);
+nAn = 8;
 lickWithin = 0.25; %CHANGE, lick within this window
 winRew = [-1 2]; % CHANGE, window for aligning signal to rewarded trials
 winAcc = [-1 1]; % CHANGE, window for aligning signal to acceleration
@@ -19,10 +17,11 @@ NumStd = 2; % CHANGE, for immobility trough/peak analysis
 fig = figure;
 plm = 2; pln = nAn;
 clr = {'k','r','b','c','m'};
-lbl = {'pre','post'};
+lbl = {'acsf','iGluR','nAChR','mAChR','d1d2'};
 
-for z = 1:length(compare)
-    beh = compare(z).s;
+for z = 1:length(cannula)
+    beh = cannula(z).s;
+    win = cannula(z).win;
     for x = 1:length(beh)
         Fs = beh(x).Fs;
         rew = beh(x).reward./Fs; % reward delivery times, in seconds
@@ -30,14 +29,16 @@ for z = 1:length(compare)
         [rewYes, ~, lickNew] = extractRewardedTrials(rew, lick, [0 lickWithin]);
         %rewYes: indices of rewarded trials (animal licked within specified window)
         ev = rew(rewYes); % delivery times for rewarded trials, in seconds
-
+        ev = find(ev > win(x,1)*60 & ev < win(x,2)*60); % extract rewarded trials during post-infusion window
+        
         for y = 1:length(beh(x).FP)
             sig = beh(x).FP{y}; % signal that will be aligned to event times
             sig = sig - nanmean(sig); % subtract mean of trace to center on zero
             [mat, time] = getSTA(sig, ev, Fs, [winRew(1), winRew(end)]);
-            compare(z).a_rew{x,y} = mat; % save into structure
+            cannula(z).a_rew{x,y} = mat; % save into structure
             
             sp(x) = subplot(plm,pln,x+(y*nAn)); hold on
+            sp(x) = subplot(plm,pln,x+((y-1)*nAn)); hold on
             shadederrbar(time, nanmean(mat,2), SEM(mat,2), clr{z}); % plot average across trials
             ylabel(sprintf('%s (%dF/F)',beh(x).FPnames{y}));
             xlabel('latency to reward (s)');
@@ -54,6 +55,9 @@ r = [200 700]; % range for ACh trough, in milliseconds
 r = (r/(1000/Fs) + find(time == 0)); 
 for z = 1:2
     for x = 1:4
+        pull = cannula(z).a_rew{x,y}; % extract matrix of reward-aligned signals during post-infusion window into workspace
+for z = 1:length(compare)
+    for x = 1:size(compare(z).a_rew,1)
         pull = compare(z).a_rew{x,y}; % extract matrix of reward-aligned signals during post-infusion window into workspace
         pull = pull(r(1):r(2),:); % extract only segment of time specified as window for reward-related trough
         [a,b] = min(pull); % find local minima within range
